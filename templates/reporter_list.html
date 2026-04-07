@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>기자 목록</h2>
+    <a href="{{ url_for('reporter_create') }}" class="btn btn-success">기자 등록</a>
+</div>
+
+<div class="row g-3">
+    {% for reporter in reporters %}
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ reporter.name }}</h5>
+                    <p class="mb-1"><strong>언론사:</strong> {{ reporter.media_company }}</p>
+                    <p class="mb-1"><strong>출입 분야:</strong> {{ reporter.beat }}</p>
+                    <p class="mb-3"><strong>이메일:</strong> {{ reporter.email or '-' }}</p>
+                    <a href="{{ url_for('reporter_detail', reporter_id=reporter.id) }}" class="btn btn-primary btn-sm">상세 보기</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
