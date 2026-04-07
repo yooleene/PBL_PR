@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Studio One Sample</title>
+    <style>
+      :root {
+        --bg: #f4efe6;
+        --surface: rgba(255, 252, 247, 0.86);
+        --text: #1f1d1a;
+        --muted: #6c6256;
+        --accent: #d96f32;
+        --accent-dark: #b9531d;
+        --line: rgba(31, 29, 26, 0.08);
+        --shadow: 0 20px 60px rgba(71, 54, 34, 0.15);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(217, 111, 50, 0.18), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(88, 132, 117, 0.18), transparent 25%),
+          var(--bg);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .container {
+        width: min(1120px, calc(100% - 40px));
+        margin: 0 auto;
+      }
+
+      header {
+        padding: 24px 0;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .brand {
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 24px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .hero {
+        padding: 48px 0 28px;
+      }
+
+      .hero-card {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 36px;
+        padding: 42px;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(12px);
+      }
+
+      .eyebrow {
+        display: inline-block;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(217, 111, 50, 0.12);
+        color: var(--accent-dark);
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      h1 {
+        margin: 18px 0 16px;
+        font-size: clamp(2.5rem, 5vw, 4.8rem);
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 620px;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.7;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 28px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 22px;
+        border-radius: 999px;
+        font-weight: 700;
+        transition: transform 0.18s ease, background 0.18s ease;
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+      }
+
+      .button.primary {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .button.secondary {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.55);
+      }
+
+      .hero-panel {
+        display: grid;
+        gap: 16px;
+        align-content: center;
+      }
+
+      .panel-box {
+        padding: 22px;
+        border-radius: 22px;
+        background: #fffaf4;
+        border: 1px solid rgba(31, 29, 26, 0.08);
+      }
+
+      .panel-box strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 1rem;
+      }
+
+      .panel-box span {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      section {
+        padding: 34px 0;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 22px;
+      }
+
+      .section-head h2 {
+        margin: 0;
+        font-size: 1.8rem;
+      }
+
+      .section-head p {
+        margin: 0;
+        color: var(--muted);
+        max-width: 560px;
+        line-height: 1.7;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .card {
+        padding: 24px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.74);
+        border: 1px solid var(--line);
+      }
+
+      .card-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        margin-bottom: 16px;
+        background: rgba(217, 111, 50, 0.14);
+        color: var(--accent-dark);
+        font-weight: 800;
+      }
+
+      .card h3 {
+        margin: 0 0 10px;
+        font-size: 1.15rem;
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .showcase {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+
+      .showcase-box {
+        min-height: 230px;
+        padding: 26px;
+        border-radius: 28px;
+        border: 1px solid var(--line);
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 248, 240, 0.92));
+      }
+
+      .quote {
+        font-size: 1.35rem;
+        line-height: 1.6;
+      }
+
+      .quote strong {
+        color: var(--accent-dark);
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 22px;
+      }
+
+      .stat {
+        padding: 16px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid var(--line);
+      }
+
+      .stat b {
+        display: block;
+        font-size: 1.4rem;
+        margin-bottom: 6px;
+      }
+
+      .newsletter {
+        display: flex;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .newsletter input {
+        flex: 1;
+        min-width: 0;
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: #fff;
+        font: inherit;
+      }
+
+      .newsletter button {
+        border: 0;
+        padding: 14px 18px;
+        border-radius: 14px;
+        background: var(--text);
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .message {
+        margin-top: 12px;
+        color: var(--accent-dark);
+        font-weight: 700;
+        min-height: 24px;
+      }
+
+      footer {
+        padding: 30px 0 48px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      @media (max-width: 860px) {
+        .hero-card,
+        .cards,
+        .showcase {
+          grid-template-columns: 1fr;
+        }
+
+        .section-head,
+        .nav {
+          align-items: start;
+          flex-direction: column;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .container {
+          width: min(100% - 24px, 1120px);
+        }
+
+        .hero-card {
+          padding: 26px;
+        }
+
+        .nav-links,
+        .actions,
+        .newsletter,
+        .stats {
+          width: 100%;
+        }
+
+        .nav-links,
+        .actions,
+        .newsletter,
+        .stats {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+
+        h1 {
+          font-size: 2.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="container">
+      <nav class="nav">
+        <a class="brand" href="#">Studio One</a>
+        <div class="nav-links">
+          <a href="#about">소개</a>
+          <a href="#features">특징</a>
+          <a href="#contact">문의</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <div class="hero-card">
+          <div>
+            <span class="eyebrow">Single File Demo</span>
+            <h1>한 파일로 끝나는<br />샘플 웹사이트</h1>
+            <p>
+              이 페이지는 HTML 파일 하나에 구조, 스타일, 간단한 동작까지 모두 담은 예제입니다.
+              바로 열어서 확인할 수 있고, 텍스트와 색상만 바꿔도 소개 페이지나 랜딩 페이지로 재사용할 수 있습니다.
+            </p>
+            <div class="actions">
+              <a class="button primary" href="#features">특징 보기</a>
+              <a class="button secondary" href="#contact">연락처</a>
+            </div>
+          </div>
+
+          <div class="hero-panel">
+            <div class="panel-box">
+              <strong>빠른 시작</strong>
+              <span>브라우저에서 `index.html`만 열면 바로 동작합니다. 별도 빌드 과정이 없습니다.</span>
+            </div>
+            <div class="panel-box">
+              <strong>손쉬운 수정</strong>
+              <span>문구, 카드, 버튼, 색상만 바꾸면 다른 목적의 샘플 사이트로 쉽게 확장할 수 있습니다.</span>
+            </div>
+            <div class="panel-box">
+              <strong>반응형 대응</strong>
+              <span>데스크톱과 모바일에서 모두 보기 좋게 정렬이 바뀌도록 구성했습니다.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="about">
+        <div class="section-head">
+          <h2>깔끔한 기본 구성</h2>
+          <p>
+            상단 내비게이션, 메인 소개 영역, 특징 카드, 문의 영역까지 포함해서
+            단순하지만 실제 샘플로 쓰기 쉬운 형태로 만들었습니다.
+          </p>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <div class="card-number">01</div>
+            <h3>단일 파일</h3>
+            <p>HTML, CSS, JavaScript를 하나의 문서에 넣어 바로 전달하거나 테스트할 수 있습니다.</p>
+          </article>
+          <article class="card">
+            <div class="card-number">02</div>
+            <h3>가벼운 인터랙션</h3>
+            <p>아래 문의 영역에는 버튼 클릭에 반응하는 간단한 메시지 기능을 추가했습니다.</p>
+          </article>
+          <article class="card">
+            <div class="card-number">03</div>
+            <h3>확장 가능</h3>
+            <p>이미지, 섹션, 폼, 애니메이션을 이어서 추가하기 쉬운 구조로 정리했습니다.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="features">
+        <div class="showcase">
+          <div class="showcase-box">
+            <p class="quote">
+              "브랜드 소개, 포트폴리오 시작 페이지, 제품 랜딩 초안처럼
+              <strong>빠르게 화면이 필요할 때</strong> 바로 활용할 수 있는 템플릿입니다."
+            </p>
+          </div>
+          <div class="showcase-box">
+            <strong>예시 지표</strong>
+            <div class="stats">
+              <div class="stat">
+                <b>1</b>
+                <span>HTML 파일</span>
+              </div>
+              <div class="stat">
+                <b>3</b>
+                <span>주요 섹션</span>
+              </div>
+              <div class="stat">
+                <b>100%</b>
+                <span>브라우저 실행</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact">
+        <div class="section-head">
+          <h2>문의 섹션 예시</h2>
+          <p>아래 입력창은 데모용입니다. 버튼을 누르면 페이지 안에서 안내 메시지가 표시됩니다.</p>
+        </div>
+        <div class="card">
+          <form class="newsletter" id="demoForm">
+            <input type="email" id="emailInput" placeholder="이메일 주소를 입력하세요" />
+            <button type="submit">보내기</button>
+          </form>
+          <div class="message" id="message"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="container">
+      <div>Sample website in a single HTML file. Customize freely.</div>
+    </footer>
+
+    <script>
+      const form = document.getElementById("demoForm");
+      const emailInput = document.getElementById("emailInput");
+      const message = document.getElementById("message");
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        if (!emailInput.value.trim()) {
+          message.textContent = "이메일 주소를 입력해 주세요.";
+          return;
+        }
+
+        message.textContent = emailInput.value + " 주소로 데모 메시지를 보낼 준비가 되었습니다.";
+        form.reset();
+      });
+    </script>
+  </body>
+</html>
