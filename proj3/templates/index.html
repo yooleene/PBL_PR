@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이슈 분석 AI | Module 3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a28;
+            --border: #2a2a3d; --text: #e8e8f0; --dim: #8888a8;
+            --accent: #6c5ce7; --accent-glow: rgba(108,92,231,0.25);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+        nav {
+            background: rgba(10,10,15,0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); padding: 0 24px;
+        }
+        .nav-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; align-items: center; height: 56px;
+        }
+        .nav-logo {
+            font-weight: 900; font-size: 17px;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .nav-logo span { font-weight: 400; -webkit-text-fill-color: var(--dim); }
+        main {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            padding: 32px 24px;
+        }
+        .container { max-width: 620px; width: 100%; }
+        .hero { text-align: center; margin-bottom: 40px; }
+        .hero h1 { font-size: 34px; font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; }
+        .hero p { color: var(--dim); font-size: 14px; line-height: 1.8; }
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 28px;
+        }
+        .card-label {
+            font-size: 11px; font-weight: 700; color: var(--accent);
+            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px;
+        }
+        input[type="text"], select {
+            width: 100%; background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--text); padding: 14px 16px;
+            font-family: inherit; font-size: 15px; transition: border-color 0.2s;
+            appearance: none; -webkit-appearance: none;
+        }
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238888a8' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+        select option { background: var(--surface2); color: var(--text); }
+        input:focus, select:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        input::placeholder { color: var(--dim); }
+        label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 6px; font-weight: 500; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+        .company-desc {
+            margin-top: 10px; padding: 12px 16px;
+            background: rgba(108,92,231,0.06); border: 1px solid rgba(108,92,231,0.15);
+            border-radius: 8px; font-size: 12px; color: var(--dim); line-height: 1.7;
+            display: none;
+        }
+        .company-desc.active { display: block; }
+        .company-desc strong { color: var(--accent); }
+        .btn {
+            width: 100%; margin-top: 20px; padding: 16px;
+            background: var(--accent); color: #fff; border: none;
+            border-radius: 10px; font-family: inherit;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn:hover { background: #7c6ef0; transform: translateY(-1px); }
+        .info {
+            margin-top: 20px; background: var(--surface2);
+            border-radius: 12px; padding: 20px 24px;
+            font-size: 13px; color: var(--dim); line-height: 2;
+        }
+        .info strong { color: var(--text); }
+        .loading {
+            display: none; position: fixed; inset: 0;
+            background: rgba(10,10,15,0.92); z-index: 9999;
+            flex-direction: column; justify-content: center; align-items: center; gap: 20px;
+        }
+        .loading.active { display: flex; }
+        .spinner {
+            width: 44px; height: 44px; border: 3px solid var(--border);
+            border-top-color: var(--accent); border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading p { color: var(--dim); font-size: 14px; }
+        .loading .sub { font-size: 12px; }
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 26px; }
+            .row { grid-template-columns: 1fr; }
+            .card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <div class="nav-logo">이슈분석 AI <span>Module 3</span></div>
+            <div style="display:flex;gap:8px;">
+                <a href="/documents" style="color:var(--dim);text-decoration:none;font-size:14px;padding:7px 14px;border-radius:8px;border:1px solid var(--border);font-weight:500;">📁 자료관리</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            <div class="hero">
+                <h1>이슈 분석 AI</h1>
+                <p>키워드를 입력하면 최신 뉴스 + 내부 자료를 기반으로<br>사업회사 관점의 이슈 분석 리포트를 생성합니다.</p>
+            </div>
+
+            <form action="/analyze" method="POST" onsubmit="showLoading()">
+                <div class="card">
+                    <div class="card-label">분석 설정</div>
+
+                    <label>사업회사 선택</label>
+                    <select name="company_name" id="companySelect" onchange="updateCompanyDesc()">
+                        <option value="포스코홀딩스">포스코홀딩스</option>
+                        <option value="포스코이앤씨">포스코이앤씨</option>
+                        <option value="포스코인터내셔널">포스코인터내셔널</option>
+                        <option value="포스코퓨처엠">포스코퓨처엠</option>
+                    </select>
+
+                    <div class="company-desc active" id="desc_포스코홀딩스">
+                        <strong>포스코홀딩스</strong> — 그룹 지주회사. 철강, 소재, 에너지, 인프라 등 그룹 전략 총괄. ESG·거버넌스·지배구조 이슈 중심.
+                    </div>
+                    <div class="company-desc" id="desc_포스코이앤씨">
+                        <strong>포스코이앤씨</strong> — 건설·엔지니어링. 플랜트, 주택건설(더샵), 도시개발 등. 안전·부동산·건설경기 이슈 중심.
+                    </div>
+                    <div class="company-desc" id="desc_포스코인터내셔널">
+                        <strong>포스코인터내셔널</strong> — 트레이딩·자원개발. 곡물, LNG, 미얀마 가스전 등. 통상·지정학·공급망 이슈 중심.
+                    </div>
+                    <div class="company-desc" id="desc_포스코퓨처엠">
+                        <strong>포스코퓨처엠</strong> — 2차전지 소재. 양극재·음극재 생산. 배터리·전기차·광물확보 이슈 중심.
+                    </div>
+
+                    <div style="margin-top: 18px;">
+                        <label>분석 키워드</label>
+                        <input type="text" name="keyword" placeholder="예: 노란봉투법, 반도체 수출규제, 리튬 공급망, 건설 안전" required autofocus style="font-size: 17px; padding: 17px 20px;">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">🔍 이슈 분석 시작</button>
+            </form>
+
+            <div class="info">
+                <strong>📌 분석 프로세스</strong><br>
+                ① 네이버 뉴스에서 최신 기사 수집 및 본문 파싱<br>
+                ② 회사 내부 자료(RAG)에서 관련 내용 검색<br>
+                ③ 사업회사 맥락 + 정책/경쟁사/업계 동향 종합 분석<br>
+                ④ 리스크 매트릭스, 원보이스 메시지, 대응 로드맵 생성
+            </div>
+        </div>
+    </main>
+
+    <div class="loading" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>AI가 이슈를 분석하고 있습니다...</p>
+        <p class="sub">뉴스 수집 → 사업회사 맥락 분석 → 리포트 생성 (약 30~50초)</p>
+    </div>
+
+    <script>
+    function showLoading() {
+        document.getElementById('loadingOverlay').classList.add('active');
+    }
+    function updateCompanyDesc() {
+        document.querySelectorAll('.company-desc').forEach(el => el.classList.remove('active'));
+        const name = document.getElementById('companySelect').value;
+        const desc = document.getElementById('desc_' + name);
+        if (desc) desc.classList.add('active');
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>자료 관리 (RAG) | Module 3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a28;
+            --border: #2a2a3d; --text: #e8e8f0; --dim: #8888a8;
+            --accent: #6c5ce7; --accent-glow: rgba(108,92,231,0.25);
+            --success: #00d2a0; --danger: #ff6b6b; --warning: #ffc048;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; line-height: 1.7;
+        }
+        nav {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(10,10,15,0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); padding: 0 24px;
+        }
+        .nav-inner {
+            max-width: 1000px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between; height: 56px;
+        }
+        .nav-logo {
+            font-weight: 900; font-size: 17px;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .nav-logo span { font-weight: 400; -webkit-text-fill-color: var(--dim); }
+        .nav-links a {
+            color: var(--dim); text-decoration: none; font-size: 14px;
+            padding: 7px 14px; border-radius: 8px; font-weight: 500;
+            border: 1px solid var(--border); transition: all 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); border-color: var(--dim); }
+        main { max-width: 1000px; margin: 0 auto; padding: 28px 24px; }
+        h1 { font-size: 24px; font-weight: 900; margin-bottom: 6px; }
+        .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 28px; line-height: 1.8; }
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 28px; margin-bottom: 20px;
+        }
+        .card-label {
+            font-size: 11px; font-weight: 700; color: var(--accent);
+            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px;
+        }
+        label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 6px; font-weight: 500; }
+        select, input[type="file"] {
+            width: 100%; background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--text); padding: 14px 16px;
+            font-family: inherit; font-size: 14px;
+        }
+        select {
+            appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238888a8' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 16px center;
+            padding-right: 40px;
+        }
+        select option { background: var(--surface2); color: var(--text); }
+        input[type="file"] { cursor: pointer; }
+        input[type="file"]::-webkit-file-upload-button {
+            background: var(--accent); color: #fff; border: none;
+            padding: 8px 16px; border-radius: 6px; font-family: inherit;
+            font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 12px;
+        }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 12px 22px; border-radius: 8px; font-family: inherit;
+            font-size: 14px; font-weight: 600; border: none; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: #7c6ef0; }
+        .btn-danger { background: var(--danger); color: #fff; font-size: 12px; padding: 8px 14px; }
+        .btn-danger:hover { background: #e05555; }
+
+        /* 문서 리스트 */
+        .doc-item {
+            display: flex; align-items: center; gap: 16px;
+            padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .doc-item:last-child { border-bottom: none; }
+        .doc-icon {
+            width: 42px; height: 42px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
+        }
+        .doc-icon.입장문 { background: rgba(108,92,231,0.12); }
+        .doc-icon.보도자료 { background: rgba(0,210,160,0.12); }
+        .doc-icon.내부자료 { background: rgba(255,192,72,0.12); }
+        .doc-icon.사과문 { background: rgba(255,107,107,0.12); }
+        .doc-icon.기타 { background: rgba(136,136,168,0.12); }
+        .doc-info { flex: 1; }
+        .doc-name { font-size: 15px; font-weight: 600; }
+        .doc-meta { font-size: 12px; color: var(--dim); margin-top: 2px; }
+        .doc-meta .badge {
+            display: inline-block; padding: 2px 8px; border-radius: 4px;
+            font-size: 11px; font-weight: 600; margin-right: 6px;
+        }
+        .badge-company { background: rgba(108,92,231,0.12); color: var(--accent); }
+        .badge-category { background: rgba(136,136,168,0.12); color: var(--dim); }
+        .badge-chunks { background: rgba(0,210,160,0.12); color: var(--success); }
+
+        /* KPI */
+        .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+        .kpi {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 18px; text-align: center;
+        }
+        .kpi-val { font-size: 30px; font-weight: 900; }
+        .kpi-label { font-size: 11px; color: var(--dim); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+        /* 플래시 */
+        .flash {
+            padding: 14px 20px; border-radius: 10px; margin-bottom: 20px;
+            font-size: 14px; animation: slideIn 0.3s ease;
+        }
+        .flash-success { background: rgba(0,210,160,0.1); border: 1px solid rgba(0,210,160,0.25); color: var(--success); }
+        .flash-error { background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.25); color: var(--danger); }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; } }
+
+        .empty {
+            text-align: center; padding: 48px 20px; color: var(--dim);
+        }
+        .empty-icon { font-size: 40px; margin-bottom: 10px; }
+
+        @media (max-width: 768px) {
+            main { padding: 20px 16px; }
+            .card { padding: 20px; }
+            .row { grid-template-columns: 1fr; }
+            .kpi-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <div class="nav-logo">이슈분석 AI <span>Module 3</span></div>
+            <div class="nav-links">
+                <a href="/">🔍 분석</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        {% if flash_msg %}
+        <div class="flash flash-{{ flash_type }}">{{ flash_msg }}</div>
+        {% endif %}
+
+        <h1>📁 회사 자료 관리 (RAG)</h1>
+        <p class="subtitle">입장문, 보도자료, 내부자료 등을 업로드하면 벡터DB에 저장되어<br>이슈 분석 시 사업회사 맥락으로 활용됩니다.</p>
+
+        <!-- KPI -->
+        <div class="kpi-row">
+            <div class="kpi">
+                <div class="kpi-val">{{ doc_count }}</div>
+                <div class="kpi-label">등록 문서</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-val">{{ chunk_count }}</div>
+                <div class="kpi-label">벡터 청크</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-val">{{ company_count }}</div>
+                <div class="kpi-label">등록 회사</div>
+            </div>
+        </div>
+
+        <!-- 업로드 -->
+        <div class="card">
+            <div class="card-label">문서 업로드</div>
+            <form action="/upload" method="POST" enctype="multipart/form-data">
+                <div>
+                    <label>파일 선택 (.txt, .pdf, .docx, .md)</label>
+                    <input type="file" name="file" accept=".txt,.pdf,.docx,.md" required>
+                </div>
+                <div class="row" style="margin-top: 14px;">
+                    <div>
+                        <label>관련 사업회사</label>
+                        <select name="company">
+                            <option value="포스코홀딩스">포스코홀딩스</option>
+                            <option value="포스코이앤씨">포스코이앤씨</option>
+                            <option value="포스코인터내셔널">포스코인터내셔널</option>
+                            <option value="포스코퓨처엠">포스코퓨처엠</option>
+                            <option value="포스코그룹 공통">포스코그룹 공통</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>자료 분류</label>
+                        <select name="category">
+                            <option value="입장문">입장문</option>
+                            <option value="보도자료">보도자료</option>
+                            <option value="내부자료">내부자료</option>
+                            <option value="사과문">사과문</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top: 18px;">
+                    <button type="submit" class="btn btn-primary">📤 업로드 및 벡터DB 저장</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 문서 목록 -->
+        <div class="card">
+            <div class="card-label">저장된 문서 ({{ doc_count }}건)</div>
+
+            {% if documents %}
+                {% for doc in documents %}
+                <div class="doc-item">
+                    <div class="doc-icon {{ doc.category }}">
+                        {% if doc.category == '입장문' %}📝{% elif doc.category == '보도자료' %}📰{% elif doc.category == '내부자료' %}📋{% elif doc.category == '사과문' %}🙏{% else %}📄{% endif %}
+                    </div>
+                    <div class="doc-info">
+                        <div class="doc-name">{{ doc.filename }}</div>
+                        <div class="doc-meta">
+                            <span class="badge badge-company">{{ doc.company }}</span>
+                            <span class="badge badge-category">{{ doc.category }}</span>
+                            <span class="badge badge-chunks">{{ doc.chunk_count }}청크</span>
+                        </div>
+                    </div>
+                    <form action="/delete_doc" method="POST" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                        <input type="hidden" name="doc_id" value="{{ doc.id }}">
+                        <button type="submit" class="btn-danger">삭제</button>
+                    </form>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty">
+                    <div class="empty-icon">📭</div>
+                    <div>아직 업로드된 자료가 없습니다</div>
+                    <div style="font-size: 13px; margin-top: 4px;">입장문, 보도자료 등을 업로드하면 분석 시 RAG로 활용됩니다</div>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>분석 중... | {{ keyword }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a28;
+            --border: #2a2a3d; --text: #e8e8f0; --dim: #8888a8;
+            --accent: #6c5ce7; --success: #00d2a0; --danger: #ff6b6b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        }
+        .container { max-width: 520px; width: 90%; text-align: center; }
+        .keyword-badge {
+            display: inline-block; padding: 6px 18px;
+            background: rgba(108,92,231,0.12); border: 1px solid rgba(108,92,231,0.3);
+            border-radius: 20px; font-size: 13px; color: var(--accent); font-weight: 600;
+            margin-bottom: 12px;
+        }
+        h1 { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+        .sub { font-size: 14px; color: var(--dim); margin-bottom: 36px; }
+
+        /* 프로그레스 스텝 */
+        .steps { text-align: left; margin-bottom: 32px; }
+        .step {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 14px 0; position: relative;
+        }
+        .step + .step { border-top: 1px solid rgba(255,255,255,0.04); }
+        .step-icon {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; flex-shrink: 0;
+            background: var(--surface2); border: 1px solid var(--border);
+            color: var(--dim); transition: all 0.4s;
+        }
+        .step.active .step-icon {
+            background: rgba(108,92,231,0.15); border-color: var(--accent);
+            color: var(--accent); animation: pulse 1.5s ease-in-out infinite;
+        }
+        .step.done .step-icon {
+            background: rgba(0,210,160,0.15); border-color: var(--success);
+            color: var(--success); animation: none;
+        }
+        .step.error .step-icon {
+            background: rgba(255,107,107,0.15); border-color: var(--danger);
+            color: var(--danger); animation: none;
+        }
+        .step-text { flex: 1; padding-top: 4px; }
+        .step-title {
+            font-size: 14px; font-weight: 600;
+            color: var(--dim); transition: color 0.3s;
+        }
+        .step.active .step-title, .step.done .step-title { color: var(--text); }
+        .step-msg {
+            font-size: 12px; color: var(--dim); margin-top: 2px;
+            min-height: 18px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(108,92,231,0.3); }
+            50% { box-shadow: 0 0 0 8px rgba(108,92,231,0); }
+        }
+
+        /* 프로그레스 바 */
+        .progress-bar {
+            width: 100%; height: 4px; background: var(--surface2);
+            border-radius: 2px; overflow: hidden; margin-bottom: 24px;
+        }
+        .progress-fill {
+            height: 100%; background: linear-gradient(90deg, var(--accent), #a29bfe);
+            border-radius: 2px; transition: width 0.6s ease;
+            width: 0%;
+        }
+
+        .status-msg {
+            font-size: 13px; color: var(--dim);
+            min-height: 20px; transition: all 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="keyword-badge">{{ company_name }}</div>
+        <h1>'{{ keyword }}' 분석 중</h1>
+        <p class="sub">AI가 기사를 수집하고 분석하고 있습니다</p>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="steps">
+            <div class="step" id="step1">
+                <div class="step-icon">1</div>
+                <div class="step-text">
+                    <div class="step-title">뉴스 기사 수집</div>
+                    <div class="step-msg">네이버 뉴스에서 기사 원문을 수집합니다</div>
+                </div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-icon">2</div>
+                <div class="step-text">
+                    <div class="step-title">기사 원문 파싱</div>
+                    <div class="step-msg">기사 본문을 읽고 데이터를 정리합니다</div>
+                </div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-icon">3</div>
+                <div class="step-text">
+                    <div class="step-title">내부 자료 검색 (RAG)</div>
+                    <div class="step-msg">회사 내부 자료에서 관련 문서를 검색합니다</div>
+                </div>
+            </div>
+            <div class="step" id="step4">
+                <div class="step-icon">4</div>
+                <div class="step-text">
+                    <div class="step-title">AI 이슈 분석</div>
+                    <div class="step-msg">Gemini AI가 사업회사 관점에서 종합 분석합니다</div>
+                </div>
+            </div>
+            <div class="step" id="step5">
+                <div class="step-icon">5</div>
+                <div class="step-text">
+                    <div class="step-title">리포트 생성</div>
+                    <div class="step-msg">분석 결과를 대시보드 형식으로 구성합니다</div>
+                </div>
+            </div>
+            <div class="step" id="step6">
+                <div class="step-icon">6</div>
+                <div class="step-text">
+                    <div class="step-title">경영진 요약 생성</div>
+                    <div class="step-msg">3줄 요약 카드를 생성합니다</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-msg" id="statusMsg">준비 중...</div>
+    </div>
+
+    <script>
+    const taskId = "{{ task_id }}";
+    const totalSteps = 6;
+    let lastStep = 0;
+
+    function pollStatus() {
+        fetch('/status/' + taskId)
+            .then(r => r.json())
+            .then(data => {
+                const step = data.step;
+                const msg = data.msg;
+
+                document.getElementById('statusMsg').textContent = msg;
+
+                // 에러 처리
+                if (step === -1) {
+                    document.getElementById('statusMsg').style.color = '#ff6b6b';
+                    return;
+                }
+
+                // 프로그레스 바
+                const pct = Math.min((step / totalSteps) * 100, 100);
+                document.getElementById('progressFill').style.width = pct + '%';
+
+                // 스텝 상태 업데이트
+                for (let i = 1; i <= totalSteps; i++) {
+                    const el = document.getElementById('step' + i);
+                    el.classList.remove('active', 'done');
+                    if (i < step) {
+                        el.classList.add('done');
+                        el.querySelector('.step-icon').textContent = '✓';
+                    } else if (i === step) {
+                        el.classList.add('active');
+                    }
+                }
+
+                // 완료 시 결과 페이지로 이동
+                if (step >= 7) {
+                    document.getElementById('progressFill').style.width = '100%';
+                    for (let i = 1; i <= totalSteps; i++) {
+                        const el = document.getElementById('step' + i);
+                        el.classList.remove('active');
+                        el.classList.add('done');
+                        el.querySelector('.step-icon').textContent = '✓';
+                    }
+                    setTimeout(() => {
+                        window.location.href = '/result/' + taskId;
+                    }, 800);
+                    return;
+                }
+
+                // 계속 폴링
+                setTimeout(pollStatus, 1000);
+            })
+            .catch(() => {
+                setTimeout(pollStatus, 2000);
+            });
+    }
+
+    // 시작
+    setTimeout(pollStatus, 500);
+    </script>
+</body>
+</html>

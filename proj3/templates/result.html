@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ keyword }} 이슈 대시보드 | {{ company_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a28;
+            --border: #2a2a3d; --text: #e8e8f0; --dim: #8888a8;
+            --accent: #6c5ce7; --accent-glow: rgba(108,92,231,0.25);
+            --success: #00d2a0; --danger: #ff6b6b; --warning: #ffc048;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; line-height: 1.9; font-size: 17px;
+        }
+        nav {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(10,10,15,0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); padding: 0 24px;
+        }
+        .nav-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between; height: 56px;
+        }
+        .nav-logo {
+            font-weight: 900; font-size: 17px;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .nav-logo span { font-weight: 400; -webkit-text-fill-color: var(--dim); }
+        .nav-actions { display: flex; gap: 8px; }
+        .nav-actions a, .nav-actions button {
+            color: var(--dim); text-decoration: none; background: none;
+            border: 1px solid var(--border); border-radius: 8px;
+            padding: 7px 14px; font-size: 13px; font-family: inherit;
+            cursor: pointer; transition: all 0.2s; font-weight: 500;
+        }
+        .nav-actions a:hover, .nav-actions button:hover { color: var(--text); border-color: var(--dim); }
+        main { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
+
+        /* KPI */
+        .kpi-row {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px; margin-bottom: 28px;
+        }
+        .kpi {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .kpi.info::before { background: var(--accent); }
+        .kpi.ok::before { background: var(--success); }
+        .kpi.ng::before { background: var(--danger); }
+        .kpi.wn::before { background: var(--warning); }
+        .kpi-val { font-size: 32px; font-weight: 900; line-height: 1.1; }
+        .kpi-label { font-size: 11px; color: var(--dim); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+        /* 시각화 패널 */
+        .viz-row {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+            margin-bottom: 24px;
+        }
+        .viz-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 24px; min-height: 280px;
+        }
+        .viz-title {
+            font-size: 12px; font-weight: 700; color: var(--accent);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+        }
+
+        /* 키워드 네트워크 */
+        #keywordNetwork { width: 100%; height: 220px; }
+        .kw-node {
+            position: absolute; padding: 5px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; cursor: default;
+            white-space: nowrap; transition: transform 0.2s;
+        }
+        .kw-node:hover { transform: scale(1.1); z-index: 10; }
+        .kw-node.danger { background: rgba(255,107,107,0.18); color: var(--danger); border: 1px solid rgba(255,107,107,0.3); }
+        .kw-node.warning { background: rgba(255,192,72,0.18); color: var(--warning); border: 1px solid rgba(255,192,72,0.3); }
+        .kw-node.accent { background: rgba(108,92,231,0.18); color: var(--accent); border: 1px solid rgba(108,92,231,0.3); }
+
+        /* 리포트 카드 */
+        .report-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 36px 40px; margin-bottom: 16px;
+        }
+        .report-content h2 {
+            font-size: 26px; font-weight: 900; margin: 44px 0 20px;
+            padding-bottom: 14px; border-bottom: 2px solid var(--border); color: var(--accent);
+        }
+        .report-content h2:first-child { margin-top: 0; }
+        .report-content h3 { font-size: 22px; font-weight: 800; margin: 36px 0 16px; }
+        .report-content h4 { font-size: 18px; font-weight: 700; margin: 24px 0 12px; }
+        .report-content p { margin: 12px 0 16px; font-size: 17px; line-height: 2.0; }
+        .report-content strong { color: #fff; }
+        .report-content em { color: var(--accent); font-style: normal; }
+        .report-content hr { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+        .report-content ul, .report-content ol { margin: 12px 0 20px 20px; font-size: 17px; }
+        .report-content li { margin-bottom: 10px; line-height: 2.0; }
+
+        /* 일반 테이블 — 큰 폰트 */
+        .report-content table {
+            width: 100%; border-collapse: separate; border-spacing: 0;
+            margin: 20px 0 28px; font-size: 15px;
+            border-radius: 10px; overflow: hidden; border: 1px solid var(--border);
+        }
+        .report-content table thead th {
+            background: var(--surface2); color: var(--accent);
+            font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 15px 18px; text-align: left; border-bottom: 2px solid var(--border);
+        }
+        .report-content table tbody td {
+            padding: 14px 18px; border-bottom: 1px solid var(--border);
+            vertical-align: top; line-height: 1.9;
+        }
+
+        /* 참고 기사 테이블만 작은 폰트 */
+        .report-content table:last-of-type {
+            font-size: 13px;
+        }
+        .report-content table:last-of-type thead th {
+            font-size: 11px; padding: 11px 14px;
+        }
+        .report-content table:last-of-type tbody td {
+            padding: 10px 14px; line-height: 1.7;
+        }
+        .report-content table tbody tr:last-child td { border-bottom: none; }
+        .report-content table tbody tr:hover { background: rgba(255,255,255,0.02); }
+        .report-content blockquote {
+            background: var(--surface2); border-left: 4px solid var(--accent);
+            border-radius: 0 10px 10px 0; padding: 18px 22px; margin: 14px 0 18px;
+            font-size: 17px; line-height: 2.0; color: var(--dim);
+        }
+        .report-content a { color: var(--accent); text-decoration: none; }
+        .report-content a:hover { text-decoration: underline; }
+
+        /* 3줄 요약 오버레이 */
+        .overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(10,10,15,0.88); backdrop-filter: blur(12px);
+            z-index: 1000; justify-content: center; align-items: center;
+        }
+        .overlay.active { display: flex; }
+        .summary-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; padding: 36px; max-width: 540px; width: 90%; position: relative;
+        }
+        .summary-card .label {
+            font-size: 12px; font-weight: 700; color: var(--accent);
+            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 18px;
+        }
+        .summary-card .body { font-size: 16px; line-height: 2.2; white-space: pre-line; }
+        .summary-card .close {
+            position: absolute; top: 18px; right: 18px;
+            background: none; border: none; color: var(--dim); font-size: 22px; cursor: pointer;
+        }
+        .summary-card .actions { margin-top: 22px; display: flex; gap: 8px; }
+        .btn-primary {
+            background: var(--accent); color: #fff; border: none;
+            padding: 11px 22px; border-radius: 8px; font-family: inherit;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+        }
+        .btn-ghost {
+            background: none; color: var(--dim); border: 1px solid var(--border);
+            padding: 11px 22px; border-radius: 8px; font-family: inherit;
+            font-size: 14px; font-weight: 500; cursor: pointer;
+        }
+
+        @media print {
+            body { background: #fff; color: #111; font-size: 13px; }
+            nav, .nav-actions, .overlay, .viz-row { display: none !important; }
+            .kpi { border: 1px solid #ddd; } .kpi-val { color: #111; }
+            .report-card { border: 1px solid #ddd; padding: 20px; }
+            .report-content h2 { color: #333; } .report-content table { border: 1px solid #ddd; }
+            .report-content table thead th { background: #f5f5f5; color: #333; }
+            .report-content table tbody td { border-color: #eee; }
+        }
+        @media (max-width: 768px) {
+            main { padding: 20px 16px; }
+            .report-card { padding: 24px 20px; }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+            .viz-row { grid-template-columns: 1fr; }
+            .nav-actions { gap: 4px; }
+            .nav-actions a, .nav-actions button { padding: 6px 10px; font-size: 12px; }
+            .report-content h2 { font-size: 19px; } .report-content h3 { font-size: 17px; }
+            .report-content table { font-size: 13px; }
+            .report-content table thead th, .report-content table tbody td { padding: 10px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <div class="nav-logo">이슈분석 AI <span>Module 3</span></div>
+            <div class="nav-actions">
+                <a href="/">← 새 검색</a>
+                <a href="/documents">📁 자료관리</a>
+                <button onclick="showSummary()">💬 3줄 요약</button>
+                <button onclick="copyReport()">📋 복사</button>
+                <button onclick="window.print()">🖨️ 인쇄</button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- KPI -->
+        <div class="kpi-row">
+            <div class="kpi info">
+                <div class="kpi-val">{{ article_count }}</div>
+                <div class="kpi-label">수집 기사</div>
+            </div>
+            <div class="kpi ok">
+                <div class="kpi-val">{{ rag_count|default(0) }}</div>
+                <div class="kpi-label">RAG 매칭</div>
+            </div>
+            <div class="kpi ng">
+                <div class="kpi-val" style="font-size: 22px;">{{ company_name }}</div>
+                <div class="kpi-label">분석 대상</div>
+            </div>
+            <div class="kpi wn">
+                <div class="kpi-val" style="font-size: 17px;">{{ analysis_date }}</div>
+                <div class="kpi-label">분석 시점</div>
+            </div>
+        </div>
+
+        <!-- 시각화 패널 (JS로 동적 생성) -->
+        <div class="viz-row" id="vizRow" style="display:none;">
+            <div class="viz-card">
+                <div class="viz-title">논조 분포</div>
+                <div style="position:relative; height:220px;">
+                    <canvas id="toneChart"></canvas>
+                </div>
+            </div>
+            <div class="viz-card">
+                <div class="viz-title">리스크 키워드 네트워크</div>
+                <div id="keywordNetwork" style="position:relative; overflow:hidden;"></div>
+            </div>
+        </div>
+
+        <!-- 리포트 본문 -->
+        <div class="report-card">
+            <div class="report-content" id="reportContent">
+                {{ report_html | safe }}
+            </div>
+        </div>
+    </main>
+
+    <!-- 3줄 요약 오버레이 -->
+    <div class="overlay" id="summaryOverlay" onclick="if(event.target===this)closeSummary()">
+        <div class="summary-card">
+            <button class="close" onclick="closeSummary()">✕</button>
+            <div class="label">경영진 공유용 3줄 요약</div>
+            <div class="body">{{ summary }}</div>
+            <div class="actions">
+                <button class="btn-primary" onclick="copySummary()">📋 복사</button>
+                <button class="btn-ghost" onclick="closeSummary()">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <textarea id="reportMd" style="display:none;">{{ report_md }}</textarea>
+    <textarea id="summaryText" style="display:none;">{{ summary }}</textarea>
+
+    <script>
+    // ── 기본 함수 ──
+    function showSummary() { document.getElementById('summaryOverlay').classList.add('active'); }
+    function closeSummary() { document.getElementById('summaryOverlay').classList.remove('active'); }
+    function copyReport() {
+        navigator.clipboard.writeText(document.getElementById('reportMd').value)
+            .then(() => alert('리포트가 클립보드에 복사되었습니다!'));
+    }
+    function copySummary() {
+        navigator.clipboard.writeText(document.getElementById('summaryText').value)
+            .then(() => alert('3줄 요약이 복사되었습니다!'));
+    }
+
+    // ── 리포트에서 데이터 추출 후 시각화 ──
+    document.addEventListener('DOMContentLoaded', function() {
+        const md = document.getElementById('reportMd').value;
+
+        // 1. 논조 분포 차트
+        const toneData = extractToneData(md);
+        if (toneData.total > 0) {
+            document.getElementById('vizRow').style.display = 'grid';
+            renderToneChart(toneData);
+        }
+
+        // 2. 키워드 네트워크
+        const kwData = extractKeywordData(md);
+        if (kwData.length > 0) {
+            document.getElementById('vizRow').style.display = 'grid';
+            renderKeywordNetwork(kwData);
+        }
+
+        // 3. 테이블 내 신호등 이모지 강화
+        enhanceTables();
+    });
+
+    function extractToneData(md) {
+        const data = { positive: 0, neutral: 0, caution: 0, negative: 0, total: 0 };
+        // 논조 종합 테이블에서 건수 추출
+        const lines = md.split('\n');
+        for (const line of lines) {
+            if (line.includes('긍정') && line.includes('건')) {
+                const m = line.match(/(\d+)\s*건/); if (m) data.positive = parseInt(m[1]);
+            }
+            if (line.includes('중립') && line.includes('건')) {
+                const m = line.match(/(\d+)\s*건/); if (m) data.neutral = parseInt(m[1]);
+            }
+            if (line.includes('경계') && line.includes('건')) {
+                const m = line.match(/(\d+)\s*건/); if (m) data.caution = parseInt(m[1]);
+            }
+            if (line.includes('부정') && line.includes('건')) {
+                const m = line.match(/(\d+)\s*건/); if (m) data.negative = parseInt(m[1]);
+            }
+        }
+        data.total = data.positive + data.neutral + data.caution + data.negative;
+
+        // 대안: 이모지 기반 카운팅
+        if (data.total === 0) {
+            data.positive = (md.match(/🟢/g) || []).length;
+            data.neutral = (md.match(/🟡/g) || []).length;
+            data.caution = (md.match(/🟠/g) || []).length;
+            data.negative = (md.match(/🔴/g) || []).length;
+            data.total = data.positive + data.neutral + data.caution + data.negative;
+        }
+        return data;
+    }
+
+    function renderToneChart(data) {
+        const ctx = document.getElementById('toneChart');
+        if (!ctx || data.total === 0) return;
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['긍정', '중립', '경계', '부정'],
+                datasets: [{
+                    data: [data.positive, data.neutral, data.caution, data.negative],
+                    backgroundColor: ['#00d2a0', '#8888a8', '#ffc048', '#ff6b6b'],
+                    borderColor: '#12121a', borderWidth: 3,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        display: true, position: 'right',
+                        labels: { color: '#8888a8', font: { size: 12 }, padding: 12, usePointStyle: true, pointStyleWidth: 10 }
+                    }
+                }
+            }
+        });
+    }
+
+    function extractKeywordData(md) {
+        const keywords = [];
+        const lines = md.split('\n');
+        let inTable = false;
+
+        for (const line of lines) {
+            if (line.includes('핵심 키워드') && line.includes('연결 키워드')) { inTable = true; continue; }
+            if (inTable && line.startsWith('|') && !line.includes('---')) {
+                const cols = line.split('|').map(c => c.trim()).filter(c => c);
+                if (cols.length >= 3 && cols[0] !== '핵심 키워드') {
+                    const freq = parseInt((cols[3] || '3').replace(/\D/g, '')) || 3;
+                    const strength = cols[2] || '중';
+                    keywords.push({
+                        word: cols[0],
+                        connections: cols[1].split(',').map(s => s.trim()),
+                        strength: strength.includes('강') ? 3 : strength.includes('중') ? 2 : 1,
+                        freq: freq
+                    });
+                }
+            }
+            if (inTable && line.trim() === '') inTable = false;
+            if (inTable && line.startsWith('#')) inTable = false;
+        }
+
+        // 대안: 트리거 키워드에서 추출
+        if (keywords.length === 0) {
+            const triggerMatch = md.match(/트리거 키워드[^:]*[:：]\s*([^\n]+)/);
+            if (triggerMatch) {
+                const words = triggerMatch[1].split(/[,，、·]/);
+                words.forEach((w, i) => {
+                    const clean = w.trim().replace(/\*+/g, '');
+                    if (clean) keywords.push({ word: clean, connections: [], strength: 2, freq: 5 - i });
+                });
+            }
+        }
+        return keywords;
+    }
+
+    function renderKeywordNetwork(kwData) {
+        const container = document.getElementById('keywordNetwork');
+        if (!container || kwData.length === 0) return;
+
+        const W = container.offsetWidth || 400;
+        const H = 220;
+        const colors = ['danger', 'warning', 'accent', 'warning', 'accent'];
+
+        // SVG 생성
+        let svg = `<svg width="${W}" height="${H}" style="position:absolute;top:0;left:0;">`;
+
+        // 노드 위치 계산 (원형 배치)
+        const cx = W / 2, cy = H / 2;
+        const nodes = kwData.slice(0, 7).map((kw, i) => {
+            const angle = (i / Math.min(kwData.length, 7)) * Math.PI * 2 - Math.PI / 2;
+            const r = Math.min(W, H) * 0.32;
+            return {
+                x: cx + r * Math.cos(angle),
+                y: cy + r * Math.sin(angle),
+                word: kw.word,
+                freq: kw.freq,
+                color: colors[i % colors.length],
+                connections: kw.connections
+            };
+        });
+
+        // 연결선
+        nodes.forEach((n, i) => {
+            n.connections.forEach(conn => {
+                const target = nodes.find(m => conn.includes(m.word) || m.word.includes(conn));
+                if (target) {
+                    svg += `<line x1="${n.x}" y1="${n.y}" x2="${target.x}" y2="${target.y}" stroke="rgba(136,136,168,0.25)" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+                }
+            });
+            // 주변 노드와도 연결
+            if (i > 0) {
+                svg += `<line x1="${nodes[0].x}" y1="${nodes[0].y}" x2="${n.x}" y2="${n.y}" stroke="rgba(108,92,231,0.15)" stroke-width="1"/>`;
+            }
+        });
+
+        svg += '</svg>';
+        container.innerHTML = svg;
+
+        // 노드 라벨
+        nodes.forEach(n => {
+            const size = Math.max(11, Math.min(15, n.freq * 2 + 8));
+            const div = document.createElement('div');
+            div.className = 'kw-node ' + n.color;
+            div.style.cssText = `position:absolute; left:${n.x}px; top:${n.y}px; transform:translate(-50%,-50%); font-size:${size}px;`;
+            div.textContent = n.word;
+            container.appendChild(div);
+        });
+    }
+
+    function enhanceTables() {
+        // 테이블 내 신호등 이모지에 색상 강조
+        document.querySelectorAll('.report-content td').forEach(td => {
+            const text = td.textContent;
+            if (text.includes('🔴') || text.includes('긴급')) td.style.color = '#ff6b6b';
+            if (text.includes('🟡') || text.includes('주의')) td.style.color = '#ffc048';
+            if (text.includes('🟢') || text.includes('관찰') || text.includes('긍정')) td.style.color = '#00d2a0';
+            if (text.includes('🟠') || text.includes('경계')) td.style.color = '#ff9f43';
+            if (text.includes('⚫') || text.includes('히든')) td.style.color = '#a29bfe';
+            if (text.includes('A등급') || text === 'A') { td.style.color = '#ff6b6b'; td.style.fontWeight = '700'; }
+            if (text.includes('B등급') || text === 'B') { td.style.color = '#ffc048'; td.style.fontWeight = '700'; }
+            if (text.includes('C등급') || text === 'C') { td.style.color = '#00d2a0'; td.style.fontWeight = '700'; }
+        });
+    }
+    </script>
+</body>
+</html>
