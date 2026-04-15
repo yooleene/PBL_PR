@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -12,6 +13,8 @@ from flask import current_app
 from requests import Response, Session
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -93,11 +96,15 @@ class HttpFetcher:
             from playwright.sync_api import sync_playwright
         except ImportError:
             return None
-        with sync_playwright() as playwright:
-            browser = playwright.chromium.launch(headless=True)
-            page = browser.new_page(user_agent=current_app.config["USER_AGENT"])
-            page.goto(url, wait_until="networkidle", timeout=current_app.config["PLAYWRIGHT_TIMEOUT_MS"])
-            html = page.content()
-            final_url = page.url
-            browser.close()
-        return FetchResult(url=url, text=html, status_code=200, final_url=final_url)
+        try:
+            with sync_playwright() as playwright:
+                browser = playwright.chromium.launch(headless=True)
+                page = browser.new_page(user_agent=current_app.config["USER_AGENT"])
+                page.goto(url, wait_until="networkidle", timeout=current_app.config["PLAYWRIGHT_TIMEOUT_MS"])
+                html = page.content()
+                final_url = page.url
+                browser.close()
+            return FetchResult(url=url, text=html, status_code=200, final_url=final_url)
+        except Exception as exc:  # pragma: no cover - browser/runtime specific path
+            logger.warning("Playwright fallback is unavailable for %s: %s", url, exc)
+            return None

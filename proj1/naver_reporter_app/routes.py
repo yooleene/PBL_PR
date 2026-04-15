@@ -21,6 +21,12 @@ def index():
     return render_template("index.html")
 
 
+@web_bp.get("/healthz")
+def healthz():
+    """Lightweight health endpoint for Cloud Run and local smoke tests."""
+    return jsonify({"status": "ok"}), 200
+
+
 @web_bp.post("/analyze")
 def analyze_form():
     """Process form submission and render HTML results."""

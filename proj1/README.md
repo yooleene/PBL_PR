@@ -6,7 +6,7 @@ Flask 기반 웹 앱 프로토타입이다. 사용자가 언론사명, 기자명
 
 - 목표: `검색 -> 기사 검증 -> 기자 페이지 확보 -> 기자 페이지 기사 수집 -> 재검증 -> 분석` 흐름을 서비스 프로토타입 수준으로 구현
 - 언어/프레임워크: Python, Flask, SQLAlchemy, requests, BeautifulSoup
-- 데이터베이스: 기본 SQLite, 환경변수 변경 시 PostgreSQL로 전환 가능
+- 데이터베이스: macOS 기본 SQLite, Cloud Run에서는 Cloud SQL PostgreSQL 권장
 - 동적 페이지 대응: 기본은 `requests + BeautifulSoup`, 필요 시 Playwright fallback
 
 ## 주요 기능
@@ -80,6 +80,10 @@ pip install -r requirements.txt
 ```env
 FLASK_APP=app.py
 FLASK_ENV=development
+FLASK_DEBUG=true
+HOST=0.0.0.0
+PORT=5001
+LOG_LEVEL=INFO
 SECRET_KEY=change-this-secret
 DATABASE_URL=sqlite:///naver_reporter.db
 REQUEST_TIMEOUT=12
@@ -100,10 +104,77 @@ GEMINI_TIMEOUT=30
 4. Flask 서버 실행
 
 ```bash
-flask --app app run --debug
+python app.py
 ```
 
 브라우저에서 `http://127.0.0.1:5001` 접속
+
+참고:
+
+- macOS 로컬 기본 DB 경로는 Flask `instance` 디렉터리의 SQLite 파일이다.
+- `DATABASE_URL`을 `postgresql+psycopg://...` 형태로 지정하면 PostgreSQL로 전환된다.
+- `ENABLE_PLAYWRIGHT_FALLBACK=true`를 켜면 Playwright 브라우저 설치가 추가로 필요하다.
+
+### macOS 로컬 실행 체크
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+선택 사항:
+
+```bash
+playwright install chromium
+```
+
+위 명령은 `ENABLE_PLAYWRIGHT_FALLBACK=true`일 때만 필요하다.
+
+## Google Cloud Run 배포
+
+### 배포 전 권장 사항
+
+- Cloud Run에서는 컨테이너 재시작 시 로컬 파일이 유지되지 않으므로 `DATABASE_URL`에 Cloud SQL PostgreSQL 연결 문자열을 넣는 것을 권장한다.
+- `DATABASE_URL`을 지정하지 않으면 앱은 `/tmp/naver_reporter.db`를 사용한다. 이 경로는 동작 확인용이며 영구 저장소가 아니다.
+- Cloud Run은 `PORT` 환경변수를 주입하므로 앱은 자동으로 해당 포트에 바인딩된다.
+
+### 컨테이너 이미지 빌드
+
+프로젝트에는 Cloud Run 배포용 `Dockerfile`이 포함되어 있다.
+
+```bash
+gcloud builds submit --tag gcr.io/PROJECT_ID/naver-reporter
+```
+
+### Cloud Run 배포 예시
+
+```bash
+gcloud run deploy naver-reporter \
+  --image gcr.io/PROJECT_ID/naver-reporter \
+  --platform managed \
+  --region asia-northeast3 \
+  --allow-unauthenticated \
+  --set-env-vars SECRET_KEY=change-this-secret,LOG_LEVEL=INFO \
+  --set-secrets GOOGLE_API_KEY=GOOGLE_API_KEY:latest
+```
+
+PostgreSQL 사용 예시:
+
+```bash
+gcloud run deploy naver-reporter \
+  --image gcr.io/PROJECT_ID/naver-reporter \
+  --platform managed \
+  --region asia-northeast3 \
+  --allow-unauthenticated \
+  --set-env-vars SECRET_KEY=change-this-secret,DATABASE_URL=postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME
+```
+
+### Health Check
+
+- 헬스 엔드포인트: `/healthz`
+- JSON API 엔드포인트: `/api/v1/analyze`
 
 ## API 호출 예시
 

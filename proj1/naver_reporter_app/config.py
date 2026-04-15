@@ -9,12 +9,39 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _is_cloud_run() -> bool:
+    """Return whether the app is running on Google Cloud Run."""
+    return bool(os.getenv("K_SERVICE"))
+
+
+def _build_default_sqlite_uri() -> str:
+    """Select a writable SQLite path for the current runtime."""
+    if _is_cloud_run():
+        return "sqlite:////tmp/naver_reporter.db"
+    return "sqlite:///naver_reporter.db"
+
+
+def _normalize_database_uri(database_url: str | None) -> str:
+    """Normalize provider-specific SQLAlchemy URLs."""
+    if not database_url:
+        return _build_default_sqlite_uri()
+    if database_url.startswith("postgres://"):
+        return database_url.replace("postgres://", "postgresql://", 1)
+    return database_url
+
+
 class Config:
     """Base configuration loaded from environment variables."""
 
     SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret")
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///naver_reporter.db")
+    SQLALCHEMY_DATABASE_URI = _normalize_database_uri(os.getenv("DATABASE_URL"))
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
+
+    HOST = os.getenv("HOST", "0.0.0.0")
+    PORT = int(os.getenv("PORT", "5001"))
+    DEBUG = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
     REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "12"))
     MAX_ARTICLES = int(os.getenv("MAX_ARTICLES", "20"))
