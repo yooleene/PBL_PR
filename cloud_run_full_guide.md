@@ -121,7 +121,7 @@ gcloud run deploy pbl-pr-proj1 \
   --source . \
   --region asia-northeast3 \
   --allow-unauthenticated \
-  --set-secrets GOOGLE_API_KEY=google-api-key:latest,DB_URL=db-url:latest
+  --set-secrets GOOGLE_API_KEY=google-api-key:latest
 ```
 
 ------------------------------------------------------------------------
