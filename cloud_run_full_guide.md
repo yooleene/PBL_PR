@@ -106,6 +106,12 @@ echo -n "postgres://..." | gcloud secrets create db-url --data-file=-
 echo -n "redis://..." | gcloud secrets create redis-url --data-file=-
 ```
 
+### 7-3. Secret Manager API 활성화 
+
+``` bash
+gcloud services enable secretmanager.googleapis.com
+```
+그리고 1~3분 정도 기다린 뒤, 다시 배포하면 됨. API를 방금 켠 경우 시스템에 반영되기까지 잠시 걸릴 수 있음.
 ------------------------------------------------------------------------
 
 ## 8. Cloud Run 배포
