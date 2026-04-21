@@ -117,7 +117,7 @@ gcloud services enable secretmanager.googleapis.com
 ## 8. Cloud Run 배포
 
 ``` bash
-gcloud run deploy pbl-pr-proj1 \
+gcloud run deploy my-ai-agent \
   --source . \
   --region asia-northeast3 \
   --allow-unauthenticated \
@@ -140,7 +140,7 @@ api_key = os.environ.get("OPENAI_API_KEY")
 ### 코드 변경
 
 ``` bash
-gcloud run deploy pbl-pr-proj1 --source .
+gcloud run deploy my-ai-agent --source .
 ```
 
 ### 키 변경
