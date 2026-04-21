@@ -33,11 +33,11 @@ https://console.cloud.google.com
 
 ### 1-3. 입력
 
--   이름: my-ai-agent
+-   이름: my-ai-agent. * 원하는 이름으로 설정
 
 ### 1-4. 프로젝트 선택
 
-상단에서 생성한 프로젝트 선택
+상단에서 생성한 프로젝트 선택. * 프로젝트 ID도 생성됨
 
 ------------------------------------------------------------------------
 
@@ -92,41 +92,38 @@ app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
 
 ## 7. Secret Manager - 환경파일 안전하도록 설정(api 키 등)
 
-### 7-1. Secret 생성
+### 7-1. Secret Manager API 활성화 
+
+``` bash
+gcloud services enable secretmanager.googleapis.com --project=프로젝트ID
+```
+### 7-2. Secret 생성
 
 ``` bash
 echo -n "sk-xxxx" | gcloud secrets create openai-api-key --data-file=-
 ```
 
-### 7-2. 여러 개 생성 - 메모장에서 정리 후 쉘에서 한번에 실행
-
-``` bash
-echo -n "sk-openai" | gcloud secrets create openai-api-key --data-file=-
-echo -n "postgres://..." | gcloud secrets create db-url --data-file=-
-echo -n "redis://..." | gcloud secrets create redis-url --data-file=-
-```
-
-### 7-3. Secret Manager API 활성화 
-
-``` bash
-gcloud services enable secretmanager.googleapis.com
-```
 그리고 1~3분 정도 기다린 뒤, 다시 배포하면 됨. API를 방금 켠 경우 시스템에 반영되기까지 잠시 걸릴 수 있음.
 ------------------------------------------------------------------------
 
 ## 8. Cloud Run 배포
 
 ``` bash
-gcloud run deploy my-ai-agent \
+gcloud run deploy naver-journalist-analyzer \
   --source . \
   --region asia-northeast3 \
   --allow-unauthenticated \
+  --port 8080 \
+  --timeout 900 \
+  --memory 2Gi \
+  --cpu 1 \
+  --concurrency 1 \
   --set-secrets GOOGLE_API_KEY=google-api-key:latest
 ```
 
 ------------------------------------------------------------------------
 
-## 9. Python에서 사용
+## 9. Python에서 사용 - - 바이브 코딩시 google cloud run에서 가능하도록 수정 요청(5번에서 완료))
 
 ``` python
 import os
@@ -137,13 +134,13 @@ api_key = os.environ.get("OPENAI_API_KEY")
 
 ## 10. 운영 방법
 
-### 코드 변경
+### 코드 변경시
 
 ``` bash
-gcloud run deploy my-ai-agent --source .
+gcloud run deploy 프로젝트 ID --source .
 ```
 
-### 키 변경
+### 키 변경시
 
 ``` bash
 echo -n "새키" | gcloud secrets versions add openai-api-key --data-file=-
@@ -188,3 +185,6 @@ gcloud run deploy my-ai-agent --source . --set-secrets A=...,B=...
 ## 14. 한 줄 정리
 
 Cloud Shell → 코드 업로드 → Secret → deploy 끝
+
+
+
