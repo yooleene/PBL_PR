@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}네이버 기자 분석기 | 검색{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7 col-md-9">
+
+        <!-- 헤더 -->
+        <div class="text-center mb-5">
+          <div class="hero-icon mb-3">
+            <i class="bi bi-person-lines-fill"></i>
+          </div>
+          <h1 class="hero-title">네이버 기자 분석기</h1>
+          <p class="hero-subtitle">
+            매체명과 기자명을 입력하면 해당 기자의 기사 성향, 관심 분야,<br class="d-none d-md-inline">
+            포스코 관련 기사 및 미팅 토킹포인트를 AI로 분석합니다.
+          </p>
+        </div>
+
+        <!-- 검색 카드 -->
+        <div class="card shadow-lg border-0 search-card">
+          <div class="card-body p-4 p-md-5">
+
+            {% if error %}
+            <div class="alert alert-danger d-flex align-items-center mb-4" role="alert">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form action="/search" method="POST" id="searchForm">
+              <div class="mb-4">
+                <label for="media_name" class="form-label fw-semibold">
+                  <i class="bi bi-building me-1 text-primary"></i>매체명
+                </label>
+                <input
+                  type="text"
+                  class="form-control form-control-lg"
+                  id="media_name"
+                  name="media_name"
+                  placeholder="예: 조선일보, 중앙일보, 연합뉴스…"
+                  required
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="mb-4">
+                <label for="journalist_name" class="form-label fw-semibold">
+                  <i class="bi bi-person me-1 text-primary"></i>기자명
+                </label>
+                <input
+                  type="text"
+                  class="form-control form-control-lg"
+                  id="journalist_name"
+                  name="journalist_name"
+                  placeholder="예: 홍길동"
+                  required
+                  autocomplete="off"
+                />
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
+                <i class="bi bi-search me-2"></i>기자 분석 시작
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- 안내 정보 -->
+        <div class="row g-3 mt-4">
+          <div class="col-md-4">
+            <div class="info-card text-center p-3">
+              <i class="bi bi-clock-history text-primary fs-3 mb-2 d-block"></i>
+              <div class="fw-semibold small">소요 시간</div>
+              <div class="text-muted small">약 2~5분</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="info-card text-center p-3">
+              <i class="bi bi-file-text text-primary fs-3 mb-2 d-block"></i>
+              <div class="fw-semibold small">분석 기사 수</div>
+              <div class="text-muted small">최근 기사 최대 20건</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="info-card text-center p-3">
+              <i class="bi bi-robot text-primary fs-3 mb-2 d-block"></i>
+              <div class="fw-semibold small">분석 엔진</div>
+              <div class="text-muted small">Google Gemini AI</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('searchForm').addEventListener('submit', function() {
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>검색 중…';
+  });
+</script>
+{% endblock %}

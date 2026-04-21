@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}분석 진행 중…{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+
+      <div class="card shadow border-0 text-center p-4 p-md-5">
+        <!-- 애니메이션 아이콘 -->
+        <div class="progress-icon mb-4">
+          <div class="spinner-wrapper">
+            <div class="spinner-border text-primary" role="status" style="width:4rem;height:4rem;">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <i class="bi bi-newspaper position-absolute"></i>
+          </div>
+        </div>
+
+        <h4 class="fw-bold mb-2">기자 정보 분석 중</h4>
+        <p class="text-muted mb-4" id="progressMessage">{{ message }}</p>
+
+        <!-- 프로그레스 바 -->
+        <div class="progress mb-3" style="height: 12px; border-radius: 6px;">
+          <div
+            class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+            role="progressbar"
+            id="progressBar"
+            style="width: {{ progress }}%"
+            aria-valuenow="{{ progress }}"
+            aria-valuemin="0"
+            aria-valuemax="100">
+          </div>
+        </div>
+        <div class="d-flex justify-content-between small text-muted mb-4">
+          <span>크롤링 → 분석</span>
+          <span id="progressPct">{{ progress }}%</span>
+        </div>
+
+        <!-- 단계 표시 -->
+        <div class="steps-container text-start">
+          <div class="step-item d-flex align-items-center gap-3 mb-3" id="step1">
+            <div class="step-icon pending"><i class="bi bi-building"></i></div>
+            <div>
+              <div class="fw-semibold small">매체 및 기자 검색</div>
+              <div class="text-muted small">네이버 기자 홈에서 해당 기자 탐색</div>
+            </div>
+          </div>
+          <div class="step-item d-flex align-items-center gap-3 mb-3" id="step2">
+            <div class="step-icon pending"><i class="bi bi-file-earmark-text"></i></div>
+            <div>
+              <div class="fw-semibold small">기사 수집</div>
+              <div class="text-muted small">최신 기사 최대 20건 원문 수집</div>
+            </div>
+          </div>
+          <div class="step-item d-flex align-items-center gap-3 mb-3" id="step3">
+            <div class="step-icon pending"><i class="bi bi-robot"></i></div>
+            <div>
+              <div class="fw-semibold small">AI 분석</div>
+              <div class="text-muted small">Gemini AI로 기사 성향 및 토킹포인트 분석</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 에러 메시지 (숨김) -->
+        <div class="alert alert-danger d-none mt-3" id="errorAlert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span id="errorMessage"></span>
+          <div class="mt-2">
+            <a href="/" class="btn btn-sm btn-outline-danger">처음으로</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const JOB_ID = "{{ job_id }}";
+let pollInterval;
+
+function updateSteps(progress) {
+  const step1 = document.getElementById('step1');
+  const step2 = document.getElementById('step2');
+  const step3 = document.getElementById('step3');
+
+  function setActive(el) {
+    el.querySelector('.step-icon').className = 'step-icon active';
+  }
+  function setDone(el) {
+    el.querySelector('.step-icon').className = 'step-icon done';
+    el.querySelector('.step-icon').innerHTML = '<i class="bi bi-check-lg"></i>';
+  }
+
+  if (progress < 35) {
+    setActive(step1);
+  } else if (progress < 50) {
+    setDone(step1);
+    setActive(step2);
+  } else if (progress < 90) {
+    setDone(step1);
+    setDone(step2);
+    setActive(step3);
+  } else {
+    setDone(step1);
+    setDone(step2);
+    setDone(step3);
+  }
+}
+
+async function pollStatus() {
+  try {
+    const res = await fetch(`/api/status/${JOB_ID}`);
+    const data = await res.json();
+
+    document.getElementById('progressMessage').textContent = data.message || '';
+    const pct = data.progress || 0;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressPct').textContent = pct + '%';
+    updateSteps(pct);
+
+    if (data.status === 'done') {
+      clearInterval(pollInterval);
+      window.location.href = `/result/${JOB_ID}`;
+    } else if (data.status === 'error') {
+      clearInterval(pollInterval);
+      document.getElementById('errorAlert').classList.remove('d-none');
+      document.getElementById('errorMessage').textContent = data.error || '오류가 발생했습니다.';
+      document.querySelector('.progress').classList.add('d-none');
+    }
+  } catch (e) {
+    console.error('Poll error:', e);
+  }
+}
+
+pollInterval = setInterval(pollStatus, 2000);
+pollStatus();
+</script>
+{% endblock %}
