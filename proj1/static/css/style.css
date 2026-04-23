@@ -1,0 +1,400 @@
+/* ===================================================
+   네이버 기자 분석기 - Custom Styles
+   =================================================== */
+
+:root {
+  --primary: #003f8a;
+  --primary-light: #0056b3;
+  --accent: #ff6900;
+  --posco-red: #c8102e;
+  --bg-light: #f8f9fb;
+  --border-radius: 12px;
+  --shadow: 0 2px 16px rgba(0,0,0,0.08);
+}
+
+/* ---- Global ---- */
+body {
+  font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-light);
+  color: #1a1a2e;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+}
+
+/* ---- Navbar ---- */
+.bg-primary-custom {
+  background: linear-gradient(135deg, var(--primary) 0%, #005cc5 100%) !important;
+}
+
+.navbar-brand {
+  font-size: 1.1rem;
+  letter-spacing: -0.3px;
+}
+
+/* ---- Hero Section ---- */
+.hero-section {
+  padding: 5rem 1rem 4rem;
+}
+
+.hero-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--primary) 0%, #005cc5 100%);
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2.2rem;
+  box-shadow: 0 8px 24px rgba(0, 63, 138, 0.3);
+}
+
+.hero-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.5px;
+}
+
+.hero-subtitle {
+  color: #6c757d;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* ---- Search Card ---- */
+.search-card {
+  border-radius: var(--border-radius) !important;
+  overflow: hidden;
+}
+
+.search-card .form-control {
+  border-radius: 8px;
+  border: 1.5px solid #dee2e6;
+  transition: all 0.2s;
+}
+
+.search-card .form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 63, 138, 0.12);
+}
+
+.search-card .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 0.8rem;
+  transition: all 0.2s;
+}
+
+.search-card .btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 63, 138, 0.4);
+}
+
+/* ---- Info Cards ---- */
+.info-card {
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s;
+}
+
+.info-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* ---- Progress Page ---- */
+.progress-icon {
+  position: relative;
+  display: inline-block;
+}
+
+.spinner-wrapper {
+  position: relative;
+  width: 4.5rem;
+  height: 4.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-wrapper i {
+  font-size: 1.6rem;
+  color: var(--primary);
+}
+
+.steps-container {
+  background: var(--bg-light);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.step-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+
+.step-icon.pending {
+  background: #e9ecef;
+  color: #6c757d;
+}
+
+.step-icon.active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  animation: pulse 1.5s infinite;
+}
+
+.step-icon.done {
+  background: #28a745;
+  color: white;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 63, 138, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(0, 63, 138, 0); }
+}
+
+/* ---- Journalist Header ---- */
+.journalist-header {
+  border-radius: var(--border-radius) !important;
+  background: linear-gradient(135deg, white 0%, #f0f4ff 100%);
+}
+
+.journalist-photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--primary);
+}
+
+.journalist-photo-placeholder {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
+}
+
+/* ---- Tone Badges ---- */
+.badge-비판 { background: #dc3545; }
+.badge-중립 { background: #6c757d; }
+.badge-우호  { background: #28a745; }
+
+/* ---- Tabs ---- */
+.nav-tabs-custom {
+  border-bottom: 2px solid #dee2e6;
+  gap: 0.25rem;
+}
+
+.nav-tabs-custom .nav-link {
+  border: none;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  color: #6c757d;
+  padding: 0.6rem 1rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+}
+
+.nav-tabs-custom .nav-link:hover {
+  color: var(--primary);
+  background: rgba(0, 63, 138, 0.05);
+  border-radius: 6px 6px 0 0;
+}
+
+.nav-tabs-custom .nav-link.active {
+  color: var(--primary);
+  font-weight: 700;
+  border-bottom-color: var(--primary);
+}
+
+/* ---- Interest Areas ---- */
+.interest-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ---- Keyword Cards ---- */
+.keyword-card {
+  background: var(--bg-light);
+  border-radius: 10px;
+  border: 1px solid #e9ecef;
+  height: 100%;
+  transition: all 0.2s;
+}
+
+.keyword-card:hover {
+  border-color: var(--primary);
+  background: white;
+}
+
+.freq-high { background: #dc3545; }
+.freq-mid  { background: #fd7e14; }
+.freq-low  { background: #6c757d; }
+
+/* ---- Article List ---- */
+.article-item {
+  transition: background 0.15s;
+}
+
+.article-item:hover {
+  background: rgba(0, 63, 138, 0.03);
+}
+
+.article-item:last-child {
+  border-bottom: none !important;
+}
+
+.article-num {
+  min-width: 24px;
+  height: 24px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.article-num.posco {
+  background: var(--posco-red);
+}
+
+.article-title {
+  color: #1a1a2e;
+  text-decoration: none;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.article-title:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+/* ---- Strategy Card ---- */
+.strategy-card {
+  background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+  border-left: 4px solid #ffc107 !important;
+}
+
+/* ---- Talking Points ---- */
+.talking-point-card {
+  border-radius: var(--border-radius) !important;
+  transition: all 0.2s;
+}
+
+.talking-point-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+}
+
+.tp-number {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.rationale-box {
+  background: var(--bg-light);
+  border-left: 3px solid var(--primary);
+}
+
+/* ---- Cards Global ---- */
+.card {
+  border-radius: var(--border-radius) !important;
+}
+
+/* ---- Footer ---- */
+.footer {
+  margin-top: auto;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 3rem 1rem 2rem;
+  }
+
+  .hero-title {
+    font-size: 1.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .nav-tabs-custom .nav-link {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .journalist-header .card-body {
+    padding: 1rem !important;
+  }
+
+  .journalist-photo,
+  .journalist-photo-placeholder {
+    width: 54px;
+    height: 54px;
+    font-size: 1.5rem;
+  }
+
+  .tp-number {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .talking-point-card .card-body {
+    padding: 1rem !important;
+  }
+
+  h2.fw-bold {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .nav-tabs-custom .nav-link span.badge {
+    display: none;
+  }
+}

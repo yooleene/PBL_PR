@@ -1,6 +1,6 @@
 """
 네이버 기자 분석 웹 애플리케이션
-Flask + Playwright + Google Gemini
+Flask + Playwright + OpenAI
 """
 
 import os
@@ -21,10 +21,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from utils.crawler import NaverJournalistCrawler
-from utils.analyzer import GeminiAnalyzer
+from utils.analyzer import OpenAIAnalyzer
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "naver-journalist-analyzer-secret")
+app.config["JSON_AS_ASCII"] = False
 
 # 진행 중인 작업 저장소 (프로덕션에서는 Redis 사용 권장)
 JOBS: dict = {}
@@ -68,7 +69,7 @@ def _run_analysis(job_id: str, media_name: str, journalist_name: str):
 
         # 2. AI 분석 (관심분야·논조·키워드 / 토킹포인트 2회 분리 호출)
         progress("AI 분석 중…", 91)
-        analyzer = GeminiAnalyzer()
+        analyzer = OpenAIAnalyzer()
         analysis_result = analyzer.analyze(
             journalist_name=journalist_name,
             media_name=media_name,
@@ -161,4 +162,7 @@ def result_page(job_id: str):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5001)
+    flask_debug = os.getenv("FLASK_DEBUG", "true").lower() in {"1", "true", "yes", "on"}
+    flask_host = os.getenv("FLASK_HOST", "0.0.0.0")
+    flask_port = int(os.getenv("FLASK_PORT", "5001"))
+    app.run(debug=flask_debug, host=flask_host, port=flask_port)

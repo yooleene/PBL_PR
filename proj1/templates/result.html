@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}{{ data.journalist_name }} 기자 분석 결과{% endblock %}
+
+{% block content %}
+{% set analysis = data.analysis %}
+
+<div class="container py-4">
+
+  <!-- 기자 프로필 헤더 -->
+  <div class="journalist-header card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <div class="row align-items-center">
+        <div class="col-auto">
+          {% if data.profile and data.profile.photo_url %}
+          <img src="{{ data.profile.photo_url }}" alt="{{ data.journalist_name }}" class="journalist-photo">
+          {% else %}
+          <div class="journalist-photo-placeholder">
+            <i class="bi bi-person-fill"></i>
+          </div>
+          {% endif %}
+        </div>
+        <div class="col">
+          <h2 class="fw-bold mb-1">{{ data.journalist_name }} 기자</h2>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <span class="badge bg-primary fs-6 px-3 py-2">
+              <i class="bi bi-building me-1"></i>{{ data.media_name }}
+            </span>
+            {% if analysis.article_tone %}
+            <span class="badge badge-tone-{{ analysis.article_tone.stance | default('중립적') | replace('적','') }} px-3 py-2">
+              <i class="bi bi-chat-quote me-1"></i>{{ analysis.article_tone.stance | default('중립적') }} 논조
+            </span>
+            {% endif %}
+            <span class="text-muted small">
+              <i class="bi bi-file-text me-1"></i>분석 기사 {{ data.total_articles }}건
+            </span>
+          </div>
+        </div>
+        <div class="col-auto d-none d-md-block">
+          <a href="/" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-search me-1"></i>새 검색
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 탭 네비게이션 -->
+  <ul class="nav nav-tabs nav-tabs-custom mb-4" id="resultTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-overview" type="button">
+        <i class="bi bi-grid me-1"></i>종합 분석
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-articles" type="button">
+        <i class="bi bi-list-ul me-1"></i>최신 기사
+        <span class="badge bg-secondary ms-1">{{ data.latest_articles | length }}</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-posco" type="button">
+        <i class="bi bi-buildings me-1"></i>포스코 기사
+        <span class="badge bg-danger ms-1">{{ data.posco_articles | length }}</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-talking" type="button">
+        <i class="bi bi-chat-dots me-1"></i>토킹포인트
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="resultTabContent">
+
+    <!-- ==================== 탭 1: 종합 분석 ==================== -->
+    <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
+      <div class="row g-4">
+
+        <!-- 관심 분야 -->
+        <div class="col-lg-6">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-transparent border-0 pb-0">
+              <h5 class="fw-bold mb-0">
+                <i class="bi bi-bookmark-star text-primary me-2"></i>관심 분야
+              </h5>
+            </div>
+            <div class="card-body">
+              {% if analysis.interest_areas %}
+                {% for item in analysis.interest_areas %}
+                <div class="interest-item mb-3">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="interest-dot"></span>
+                    <span class="fw-semibold">{{ item.area }}</span>
+                  </div>
+                  <p class="text-muted small mb-0 ps-3">{{ item.description }}</p>
+                </div>
+                {% endfor %}
+              {% else %}
+                <p class="text-muted">분석 데이터가 없습니다.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- 기사 논조 -->
+        <div class="col-lg-6">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-transparent border-0 pb-0">
+              <h5 class="fw-bold mb-0">
+                <i class="bi bi-chat-square-quote text-warning me-2"></i>기사 논조
+              </h5>
+            </div>
+            <div class="card-body">
+              {% if analysis.article_tone %}
+              <p class="text-body mb-3">{{ analysis.article_tone.overall }}</p>
+              {% if analysis.article_tone.characteristics %}
+              <div class="d-flex flex-wrap gap-2">
+                {% for char in analysis.article_tone.characteristics %}
+                <span class="badge bg-light text-dark border px-3 py-2">{{ char }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+              {% else %}
+              <p class="text-muted">분석 데이터가 없습니다.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- 최근 관심 키워드 -->
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-0 pb-0">
+              <h5 class="fw-bold mb-0">
+                <i class="bi bi-tags text-success me-2"></i>최근 관심 키워드
+              </h5>
+            </div>
+            <div class="card-body">
+              {% if analysis.recent_keywords %}
+              <div class="row g-3">
+                {% for kw in analysis.recent_keywords %}
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                  <div class="keyword-card p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                      <span class="fw-semibold">{{ kw.keyword }}</span>
+                      <span class="badge freq-{{ kw.frequency | replace('높음','high') | replace('중간','mid') | replace('낮음','low') }} small">
+                        {{ kw.frequency }}
+                      </span>
+                    </div>
+                    <p class="text-muted small mb-0">{{ kw.context }}</p>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <p class="text-muted">분석 데이터가 없습니다.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== 탭 2: 최신 기사 ==================== -->
+    <div class="tab-pane fade" id="tab-articles" role="tabpanel">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0">
+          <h5 class="fw-bold mb-0">
+            <i class="bi bi-newspaper text-primary me-2"></i>
+            최신 기사 {{ data.latest_articles | length }}건
+          </h5>
+        </div>
+        <div class="card-body p-0">
+          {% if data.latest_articles %}
+          <div class="article-list">
+            {% for art in data.latest_articles %}
+            <div class="article-item p-4 border-bottom">
+              <div class="d-flex justify-content-between align-items-start gap-3">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="article-num">{{ loop.index }}</span>
+                    {% if art.url %}
+                    <a href="{{ art.url }}" target="_blank" rel="noopener" class="article-title fw-semibold">
+                      {{ art.title }}
+                      <i class="bi bi-box-arrow-up-right small ms-1"></i>
+                    </a>
+                    {% else %}
+                    <span class="article-title fw-semibold">{{ art.title }}</span>
+                    {% endif %}
+                  </div>
+                  {% if art.summary %}
+                  <p class="text-muted small mb-0 ms-4">{{ art.summary }}</p>
+                  {% endif %}
+                </div>
+                {% if art.date %}
+                <span class="text-muted small text-nowrap">{{ art.date }}</span>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            수집된 기사가 없습니다.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 탭 3: 포스코 기사 ==================== -->
+    <div class="tab-pane fade" id="tab-posco" role="tabpanel">
+
+      {% if analysis.posco_coverage %}
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <img src="https://www.posco.co.kr/favicon.ico" alt="POSCO" width="20" onerror="this.style.display='none'">
+            <h5 class="fw-bold mb-0">포스코 보도 성향</h5>
+          </div>
+          {% if analysis.posco_coverage.posco_tone %}
+          <div class="alert alert-info mb-3">
+            <strong>논조:</strong> {{ analysis.posco_coverage.posco_tone }}
+          </div>
+          {% endif %}
+          {% if analysis.posco_coverage.posco_summary %}
+          <p>{{ analysis.posco_coverage.posco_summary }}</p>
+          {% endif %}
+          {% if analysis.posco_coverage.posco_topics %}
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            {% for topic in analysis.posco_coverage.posco_topics %}
+            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2">
+              {{ topic }}
+            </span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0">
+          <h5 class="fw-bold mb-0">
+            <i class="bi bi-buildings text-danger me-2"></i>
+            포스코 관련 기사 {{ data.posco_articles | length }}건
+          </h5>
+        </div>
+        <div class="card-body p-0">
+          {% if data.posco_articles %}
+          <div class="article-list">
+            {% for art in data.posco_articles %}
+            <div class="article-item p-4 border-bottom">
+              <div class="d-flex justify-content-between align-items-start gap-3">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="article-num posco">{{ loop.index }}</span>
+                    {% if art.url %}
+                    <a href="{{ art.url }}" target="_blank" rel="noopener" class="article-title fw-semibold">
+                      {{ art.title }}
+                      <i class="bi bi-box-arrow-up-right small ms-1"></i>
+                    </a>
+                    {% else %}
+                    <span class="article-title fw-semibold">{{ art.title }}</span>
+                    {% endif %}
+                  </div>
+                  {% if art.summary %}
+                  <p class="text-muted small mb-0 ms-4">{{ art.summary }}</p>
+                  {% endif %}
+                </div>
+                {% if art.date %}
+                <span class="text-muted small text-nowrap">{{ art.date }}</span>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-search fs-1 d-block mb-2"></i>
+            포스코 관련 기사가 없습니다.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 탭 4: 토킹포인트 ==================== -->
+    <div class="tab-pane fade" id="tab-talking" role="tabpanel">
+
+      {% if analysis.meeting_strategy %}
+      <div class="card border-0 shadow-sm mb-4 strategy-card">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3">
+            <i class="bi bi-lightbulb text-warning me-2"></i>미팅 전략 개요
+          </h5>
+          <p class="mb-0 lh-lg">{{ analysis.meeting_strategy }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if analysis.talking_points %}
+      <h5 class="fw-bold mb-3">
+        <i class="bi bi-chat-dots text-primary me-2"></i>
+        핵심 토킹포인트 {{ analysis.talking_points | length }}개
+      </h5>
+      <div class="row g-4">
+        {% for tp in analysis.talking_points %}
+        <div class="col-12">
+          <div class="talking-point-card card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="d-flex gap-3">
+                <div class="tp-number">{{ loop.index }}</div>
+                <div class="flex-grow-1">
+                  <h6 class="fw-bold mb-2">{{ tp.title }}</h6>
+                  <p class="mb-2">{{ tp.content }}</p>
+                  {% if tp.rationale %}
+                  <div class="rationale-box p-3 rounded">
+                    <span class="small text-muted">
+                      <i class="bi bi-info-circle me-1"></i>
+                      <strong>활용 이유:</strong> {{ tp.rationale }}
+                    </span>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-chat-x fs-1 d-block mb-2"></i>
+        토킹포인트 데이터가 없습니다.
+      </div>
+      {% endif %}
+
+    </div>
+
+  </div><!-- /tab-content -->
+
+  <!-- 하단 버튼 -->
+  <div class="text-center mt-5">
+    <a href="/" class="btn btn-primary px-5">
+      <i class="bi bi-search me-2"></i>다른 기자 분석하기
+    </a>
+  </div>
+
+</div>
+{% endblock %}
