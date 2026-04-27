@@ -105,11 +105,11 @@ class NaverJournalistCrawler:
                 await browser.close()
 
     # ------------------------------------------------------------------ #
-    #  매체 officeId 탐색 (001 ~ 057)
+    #  매체 officeId 탐색 (001 ~ 099)
     # ------------------------------------------------------------------ #
 
     async def _find_office_id(self, page: Page, media_name: str) -> Optional[str]:
-        for i in range(1, 58):
+        for i in range(1, 100):
             office_id = str(i).zfill(3)
             url = f"{self.JOURNALIST_LIST_URL}?officeId={office_id}"
             try:
