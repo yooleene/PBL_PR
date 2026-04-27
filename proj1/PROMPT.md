@@ -58,8 +58,8 @@ proj1/
 
 **매체 탐색**
 - URL: `https://media.naver.com/journalists/whole?officeId=001`
-- officeId는 `001`~`057`까지 존재하며 매체마다 페이지가 다름
-- 001부터 057까지 순회하며 페이지 내 매체명 일치 여부 확인
+- officeId는 `001`~`099`까지 존재하며 매체마다 페이지가 다름
+- 001부터 099까지 순회하며 페이지 내 매체명 일치 여부 확인
 - 매체명 감지 우선순위: `<title>` 태그 → `h1/h2/h3/strong` → CSS 클래스(`press/office/media/name`)
 
 **기자 검색**
