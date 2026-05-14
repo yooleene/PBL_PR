@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>정부 안전/노동 동향 분석</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/app.css') }}" rel="stylesheet">
+  </head>
+  <body>
+    <header class="app-header border-bottom">
+      <div class="container-fluid px-3 px-lg-4 py-3">
+        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+          <div>
+            <h1 class="h4 mb-1">정부 안전/노동 주요 발언 및 중대재해 분석</h1>
+            <p class="text-secondary mb-0">Gemini 검색 grounding 수집, OpenAI 종합 분석, SQLite 누적 관리</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="container-fluid px-3 px-lg-4 py-3 py-lg-4">
+      {% set active_tab = active_tab|default("analysis") %}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mb-3">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="닫기"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <ul class="nav nav-tabs app-tabs" id="mainTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link {% if active_tab == 'analysis' %}active{% endif %}" id="analysis-tab" data-bs-toggle="tab" data-bs-target="#analysis" type="button" role="tab">
+            종합분석
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link {% if active_tab == 'speeches' %}active{% endif %}" id="speeches-tab" data-bs-toggle="tab" data-bs-target="#speeches" type="button" role="tab">
+            주요인사발언
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link {% if active_tab == 'incidents' %}active{% endif %}" id="incidents-tab" data-bs-toggle="tab" data-bs-target="#incidents" type="button" role="tab">
+            중대재해사례
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link {% if active_tab == 'data-search' %}active{% endif %}" id="data-search-tab" data-bs-toggle="tab" data-bs-target="#data-search" type="button" role="tab">
+            데이터검색
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link {% if active_tab == 'response' %}active{% endif %}" id="response-tab" data-bs-toggle="tab" data-bs-target="#response" type="button" role="tab">
+            당사사고 대응방향
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content pt-3" id="mainTabsContent">
+        <section class="tab-pane fade {% if active_tab == 'analysis' %}show active{% endif %}" id="analysis" role="tabpanel" aria-labelledby="analysis-tab" tabindex="0">
+          <div class="d-flex flex-column flex-lg-row justify-content-between gap-2 mb-3">
+            <div>
+              <h2 class="h5 mb-1">종합분석</h2>
+              <p class="text-secondary mb-0">저장된 주요인사 발언과 중대재해 사례를 종합해 경영층 보고용 문장으로 생성합니다.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              <form method="post" action="{{ url_for('source_links_repair') }}">
+                <button class="btn btn-outline-secondary" type="submit">
+                  <i class="bi bi-link-45deg"></i>
+                  기사 링크 보정
+                </button>
+              </form>
+              <form method="post" action="{{ url_for('analysis_generate') }}">
+                <button class="btn btn-outline-primary" type="submit">
+                  <i class="bi bi-stars"></i>
+                  종합분석 생성
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div class="analysis-stack">
+            <section class="section-panel">
+              <div class="section-title-row">
+                <h3 class="h6 mb-0">주요 시사점</h3>
+                {% if analysis and analysis.created_at %}
+                  <span class="text-secondary small">
+                    생성: {{ analysis.created_at }}
+                    {% if analysis.generated_by %}
+                      · {{ analysis.generated_by }}
+                    {% endif %}
+                  </span>
+                {% endif %}
+              </div>
+              {% if analysis and analysis.notice %}
+                <div class="alert alert-warning py-2 small">{{ analysis.notice }}</div>
+              {% endif %}
+              {% if analysis and analysis.key_implications %}
+                <div class="vstack gap-3">
+                  {% for item in analysis.key_implications %}
+                    <p class="analysis-text mb-0">{{ item }}</p>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <p class="text-secondary mb-0">수집 데이터가 준비되면 종합분석을 생성할 수 있습니다.</p>
+              {% endif %}
+            </section>
+
+            <section class="section-panel">
+              <h3 class="h6 mb-3">포스코그룹 대응방안</h3>
+              {% if analysis and analysis.posco_response %}
+                <div class="vstack gap-3">
+                  {% for item in analysis.posco_response %}
+                    <p class="analysis-text mb-0">{{ item }}</p>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <p class="text-secondary mb-0">주요 시사점 생성 후 대응방안이 표시됩니다.</p>
+              {% endif %}
+            </section>
+
+            <section class="section-panel">
+              <div class="section-title-row">
+                <h3 class="h6 mb-0">최근 주요인사 발언 5건</h3>
+              </div>
+              {% if recent_speeches %}
+                <div class="summary-list">
+                  {% for row in recent_speeches %}
+                    <div class="summary-item">
+                      <div class="small text-secondary">{{ row.speech_date }} · {{ row.actor }} · {{ row.source_name }}</div>
+                      <div class="fw-semibold">
+                        {% if is_valid_article_url(row.source_url) %}
+                          <a href="{{ row.source_url }}" target="_blank" rel="noopener">{{ row.source_title or row.venue or "기사 보기" }}</a>
+                        {% else %}
+                          {{ row.source_title or row.venue }}
+                        {% endif %}
+                      </div>
+                      <div class="summary-body">{{ row.quote }}</div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <p class="text-secondary mb-0">최근 발언 데이터가 없습니다.</p>
+              {% endif %}
+            </section>
+
+            <section class="section-panel">
+              <div class="section-title-row">
+                <h3 class="h6 mb-0">최근 중대재해 5건</h3>
+              </div>
+              {% if recent_incidents %}
+                <div class="summary-list">
+                  {% for row in recent_incidents %}
+                    <div class="summary-item">
+                      <div class="small text-secondary">{{ row.accident_date }} · {{ row.company_name }} · {{ row.source_name }}</div>
+                      <div class="fw-semibold">
+                        {% if is_valid_article_url(row.source_url) %}
+                          <a href="{{ row.source_url }}" target="_blank" rel="noopener">{{ row.source_title or row.company_name or "기사 보기" }}</a>
+                        {% else %}
+                          {{ row.source_title or row.company_name }}
+                        {% endif %}
+                      </div>
+                      <div class="summary-body">{{ row.accident_summary }}</div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <p class="text-secondary mb-0">최근 중대재해 데이터가 없습니다.</p>
+              {% endif %}
+            </section>
+
+            <section class="section-panel">
+              <h3 class="h6 mb-3">최근 수집 이력</h3>
+              {% if runs %}
+                <div class="table-responsive">
+                  <table class="table table-sm align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th>수집일시</th>
+                        <th>기간</th>
+                        <th>구분</th>
+                        <th>상태</th>
+                        <th>신규</th>
+                        <th>중복</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for row in runs %}
+                        <tr>
+                          <td class="text-nowrap">{{ row.created_at }}</td>
+                          <td class="text-nowrap">{{ row.started_on }}~{{ row.ended_on }}</td>
+                          <td>{{ row.prompt_type }}</td>
+                          <td>{{ row.status }}</td>
+                          <td>{{ row.item_count }}</td>
+                          <td>{{ row.skipped_count }}</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <p class="text-secondary mb-0">수집 이력이 없습니다.</p>
+              {% endif %}
+            </section>
+          </div>
+        </section>
+
+        <section class="tab-pane fade {% if active_tab == 'speeches' %}show active{% endif %}" id="speeches" role="tabpanel" aria-labelledby="speeches-tab" tabindex="0">
+          <div class="section-panel mb-3">
+            <div class="section-title-row">
+              <div>
+                <h2 class="h5 mb-1">주요인사발언</h2>
+                <p class="text-secondary mb-0">주요인사 발언 데이터를 별도로 추출하고, 담당자 확인 후 저장합니다.</p>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <form class="csv-upload-form d-flex flex-wrap gap-2" method="post" action="{{ url_for('speeches_upload_csv') }}" enctype="multipart/form-data">
+                  <label class="visually-hidden" for="speeches_csv_file">주요인사발언 CSV 업로드</label>
+                  <input class="form-control form-control-sm csv-file-input" id="speeches_csv_file" name="csv_file" type="file" accept=".csv,text/csv" required>
+                  <button class="btn btn-outline-primary" type="submit">
+                    <i class="bi bi-upload"></i>
+                    CSV 업로드
+                  </button>
+                </form>
+                <a class="btn btn-outline-secondary" href="{{ url_for('speeches_csv') }}">
+                  <i class="bi bi-download"></i>
+                  CSV 다운로드
+                </a>
+              </div>
+            </div>
+            <form class="collect-form d-flex flex-column flex-md-row align-items-md-end gap-2" method="post" action="{{ url_for('speeches_extract') }}">
+              <div>
+                <label class="form-label small mb-1" for="speech_started_on">시작일</label>
+                <input class="form-control form-control-sm" id="speech_started_on" name="started_on" type="date" value="{{ today }}" required>
+              </div>
+              <div>
+                <label class="form-label small mb-1" for="speech_ended_on">종료일</label>
+                <input class="form-control form-control-sm" id="speech_ended_on" name="ended_on" type="date" value="{{ today }}" required>
+              </div>
+              <button class="btn btn-primary btn-sm" type="submit">
+                <i class="bi bi-search"></i>
+                데이터 추출
+              </button>
+            </form>
+          </div>
+
+          {% if pending_speech_collection %}
+            <section class="section-panel pending-panel mb-3">
+              {% set speech_draft = pending_speech_collection["sections"]["speeches"] %}
+              <div class="section-title-row">
+                <div>
+                  <h3 class="h6 mb-1">주요인사발언 추출 미리보기</h3>
+                  <p class="text-secondary mb-0">{{ pending_speech_collection.started_on }}~{{ pending_speech_collection.ended_on }} 기간 {{ speech_draft["items"]|length }}건입니다.</p>
+                </div>
+                <form method="post" action="{{ url_for('speeches_save_extracted') }}">
+                  <textarea class="d-none" name="collection_payload">{{ pending_speech_collection_json }}</textarea>
+                  <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-database-check"></i>
+                    저장
+                  </button>
+                </form>
+              </div>
+              <div class="table-responsive preview-table">
+                <table class="table table-sm align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>날짜</th>
+                      <th>대상</th>
+                      <th>제목</th>
+                      <th>요약</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in speech_draft["items"] %}
+                      <tr>
+                        <td class="text-nowrap">{{ item.get("speech_date") or item.get("date") }}</td>
+                        <td>{{ item.get("actor") or item.get("speaker") }}</td>
+                        <td>{{ item.get("source_title") or item.get("title") }}</td>
+                        <td class="wide-text">{{ item.get("quote") or item.get("content") or item.get("summary") }}</td>
+                      </tr>
+                    {% else %}
+                      <tr>
+                        <td class="text-secondary text-center py-3" colspan="4">추출된 주요인사 발언이 없습니다.</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          {% endif %}
+
+          <div class="table-responsive table-panel">
+            <table class="table table-hover align-middle data-table">
+              <thead>
+                <tr>
+                  <th>날짜</th>
+                  <th>대상인물·기관</th>
+                  <th>발언장소</th>
+                  <th>주요발언내용</th>
+                  <th>핵심키워드</th>
+                  <th>주요발언기사출처</th>
+                  <th class="actions-col">관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in speeches %}
+                  <tr>
+                    <td class="text-nowrap">{{ row.speech_date }}</td>
+                    <td>
+                      <div class="fw-semibold">{{ row.actor }}</div>
+                      <div class="small text-secondary">{{ row.organization }}</div>
+                    </td>
+                    <td>{{ row.venue }}</td>
+                    <td class="wide-text">{{ row.quote }}</td>
+                    <td>{{ row.keywords }}</td>
+                    <td>
+                      {% if is_valid_article_url(row.source_url) %}
+                        <a href="{{ row.source_url }}" target="_blank" rel="noopener">{{ row.source_title or row.source_name or "출처" }}</a>
+                      {% else %}
+                        {{ row.source_title or row.source_name }}
+                      {% endif %}
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm" role="group">
+                        <button
+                          class="btn btn-outline-primary"
+                          type="button"
+                          data-edit-speech
+                          data-id="{{ row.id }}"
+                          data-speech-date="{{ row.speech_date|e }}"
+                          data-actor="{{ row.actor|e }}"
+                          data-organization="{{ row.organization|e }}"
+                          data-venue="{{ row.venue|e }}"
+                          data-quote="{{ row.quote|e }}"
+                          data-keywords="{{ row.keywords|e }}"
+                          data-source-title="{{ row.source_title|e }}"
+                          data-source-url="{{ row.source_url|e }}"
+                          data-source-name="{{ row.source_name|e }}"
+                          data-bs-toggle="modal"
+                          data-bs-target="#speechEditModal">
+                          <i class="bi bi-pencil-square"></i>
+                          수정
+                        </button>
+                        <form method="post" action="{{ url_for('speech_delete', speech_id=row.id) }}" data-confirm="이 발언 데이터를 삭제할까요?">
+                          <button class="btn btn-outline-danger" type="submit">
+                            <i class="bi bi-trash"></i>
+                            삭제
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td class="text-secondary text-center py-4" colspan="7">주요인사 발언 데이터가 없습니다.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="tab-pane fade {% if active_tab == 'incidents' %}show active{% endif %}" id="incidents" role="tabpanel" aria-labelledby="incidents-tab" tabindex="0">
+          <div class="section-panel mb-3">
+            <div class="section-title-row">
+              <div>
+                <h2 class="h5 mb-1">중대재해사례</h2>
+                <p class="text-secondary mb-0">중대재해 사례 데이터를 별도로 추출하고, 담당자 확인 후 저장합니다.</p>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <form class="csv-upload-form d-flex flex-wrap gap-2" method="post" action="{{ url_for('incidents_upload_csv') }}" enctype="multipart/form-data">
+                  <label class="visually-hidden" for="incidents_csv_file">중대재해사례 CSV 업로드</label>
+                  <input class="form-control form-control-sm csv-file-input" id="incidents_csv_file" name="csv_file" type="file" accept=".csv,text/csv" required>
+                  <button class="btn btn-outline-primary" type="submit">
+                    <i class="bi bi-upload"></i>
+                    CSV 업로드
+                  </button>
+                </form>
+                <a class="btn btn-outline-secondary" href="{{ url_for('incidents_csv') }}">
+                  <i class="bi bi-download"></i>
+                  CSV 다운로드
+                </a>
+              </div>
+            </div>
+            <form class="collect-form d-flex flex-column flex-md-row align-items-md-end gap-2" method="post" action="{{ url_for('incidents_extract') }}">
+              <div>
+                <label class="form-label small mb-1" for="incident_started_on">시작일</label>
+                <input class="form-control form-control-sm" id="incident_started_on" name="started_on" type="date" value="{{ today }}" required>
+              </div>
+              <div>
+                <label class="form-label small mb-1" for="incident_ended_on">종료일</label>
+                <input class="form-control form-control-sm" id="incident_ended_on" name="ended_on" type="date" value="{{ today }}" required>
+              </div>
+              <button class="btn btn-primary btn-sm" type="submit">
+                <i class="bi bi-search"></i>
+                데이터 추출
+              </button>
+            </form>
+          </div>
+
+          {% if pending_incident_collection %}
+            <section class="section-panel pending-panel mb-3">
+              {% set incident_draft = pending_incident_collection["sections"]["incidents"] %}
+              <div class="section-title-row">
+                <div>
+                  <h3 class="h6 mb-1">중대재해사례 추출 미리보기</h3>
+                  <p class="text-secondary mb-0">{{ pending_incident_collection.started_on }}~{{ pending_incident_collection.ended_on }} 기간 {{ incident_draft["items"]|length }}건입니다.</p>
+                </div>
+                <form method="post" action="{{ url_for('incidents_save_extracted') }}">
+                  <textarea class="d-none" name="collection_payload">{{ pending_incident_collection_json }}</textarea>
+                  <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-database-check"></i>
+                    저장
+                  </button>
+                </form>
+              </div>
+              <div class="table-responsive preview-table">
+                <table class="table table-sm align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>사고일</th>
+                      <th>회사명</th>
+                      <th>제목</th>
+                      <th>사고내용</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in incident_draft["items"] %}
+                      <tr>
+                        <td class="text-nowrap">{{ item.get("accident_date") or item.get("date") }}</td>
+                        <td>{{ item.get("company_name") or item.get("company") }}</td>
+                        <td>{{ item.get("source_title") or item.get("title") }}</td>
+                        <td class="wide-text">{{ item.get("accident_summary") or item.get("summary") or item.get("accident_content") }}</td>
+                      </tr>
+                    {% else %}
+                      <tr>
+                        <td class="text-secondary text-center py-3" colspan="4">추출된 중대재해 사례가 없습니다.</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          {% endif %}
+
+          <div class="table-responsive table-panel">
+            <table class="table table-hover align-middle data-table incident-table">
+              <thead>
+                <tr>
+                  <th>순번</th>
+                  <th class="actions-col incident-actions-cell">관리</th>
+                  <th>회사명</th>
+                  <th>사고일</th>
+                  <th>사고내용</th>
+                  <th>대외대응</th>
+                  <th>시사점</th>
+                  <th>기사출처</th>
+                  <th>사과문</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in incidents %}
+                  <tr>
+                    <td>{{ loop.index }}</td>
+                    <td class="incident-actions-cell">
+                      <div class="btn-group btn-group-sm" role="group">
+                        <button
+                          class="btn btn-outline-primary"
+                          type="button"
+                          data-edit-incident
+                          data-id="{{ row.id }}"
+                          data-company-name="{{ row.company_name|e }}"
+                          data-accident-date="{{ row.accident_date|e }}"
+                          data-accident-summary="{{ row.accident_summary|e }}"
+                          data-external-response="{{ row.external_response|e }}"
+                          data-implication="{{ row.implication|e }}"
+                          data-apology-text="{{ row.apology_text|e }}"
+                          data-source-title="{{ row.source_title|e }}"
+                          data-source-url="{{ row.source_url|e }}"
+                          data-source-name="{{ row.source_name|e }}"
+                          data-bs-toggle="modal"
+                          data-bs-target="#incidentEditModal">
+                          <i class="bi bi-pencil-square"></i>
+                          수정
+                        </button>
+                        <form method="post" action="{{ url_for('incident_delete', incident_id=row.id) }}" data-confirm="이 중대재해 사례를 삭제할까요?">
+                          <button class="btn btn-outline-danger" type="submit">
+                            <i class="bi bi-trash"></i>
+                            삭제
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                    <td class="fw-semibold">{{ row.company_name }}</td>
+                    <td class="text-nowrap">{{ row.accident_date }}</td>
+                    <td class="wide-text">{{ row.accident_summary }}</td>
+                    <td class="wide-text">{{ row.external_response }}</td>
+                    <td class="wide-text">{{ row.implication }}</td>
+                    <td>
+                      {% if is_valid_article_url(row.source_url) %}
+                        <a href="{{ row.source_url }}" target="_blank" rel="noopener">{{ row.source_title or row.source_name or "출처" }}</a>
+                      {% else %}
+                        {{ row.source_title or row.source_name }}
+                      {% endif %}
+                    </td>
+                    <td class="wide-text">{{ row.apology_text }}</td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td class="text-secondary text-center py-4" colspan="9">중대재해 사례 데이터가 없습니다.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="tab-pane fade {% if active_tab == 'data-search' %}show active{% endif %}" id="data-search" role="tabpanel" aria-labelledby="data-search-tab" tabindex="0">
+          <div class="section-panel mb-3">
+            <h2 class="h5 mb-1">데이터검색</h2>
+            <p class="text-secondary">저장된 앱 데이터를 자연어로 검색합니다.</p>
+            <form method="post" action="{{ url_for('data_search') }}">
+              <label class="form-label" for="data_search_query">검색 질문</label>
+              <textarea class="form-control" id="data_search_query" name="query" rows="4" required placeholder="예: 최근 중대재해 사례 중 건설업 사고를 요약해줘">{{ data_search_query }}</textarea>
+              <div class="d-flex justify-content-end mt-2">
+                <button class="btn btn-primary" type="submit">
+                  <i class="bi bi-search"></i>
+                  검색
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {% if data_search_result %}
+            <section class="section-panel data-search-result">
+              <div class="section-title-row">
+                <h3 class="h6 mb-0">검색 답변</h3>
+                {% if data_search_result.generated_by %}
+                  <span class="text-secondary small">{{ data_search_result.generated_by }}</span>
+                {% endif %}
+              </div>
+              {% if data_search_result.notice %}
+                <div class="alert alert-warning py-2 small">{{ data_search_result.notice }}</div>
+              {% endif %}
+              <p class="data-search-answer mb-0">{{ data_search_result.answer }}</p>
+
+              {% if data_search_result.evidence %}
+                <h4 class="h6 mt-4 mb-2">근거 데이터</h4>
+                <div class="search-evidence-list">
+                  {% for item in data_search_result.evidence %}
+                    <article class="search-evidence">
+                      <div class="small text-secondary">
+                        {{ item.table }}
+                        {% if item.id %} #{{ item.id }}{% endif %}
+                        {% if item.date %} · {{ item.date }}{% endif %}
+                      </div>
+                      {% if item.source_url and is_valid_article_url(item.source_url) %}
+                        <a class="fw-semibold" href="{{ item.source_url }}" target="_blank" rel="noopener">{{ item.title or "출처 보기" }}</a>
+                      {% else %}
+                        <div class="fw-semibold">{{ item.title }}</div>
+                      {% endif %}
+                      {% if item.summary %}
+                        <p class="summary-body mb-0">{{ item.summary }}</p>
+                      {% endif %}
+                    </article>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </section>
+          {% endif %}
+        </section>
+
+        <section class="tab-pane fade {% if active_tab == 'response' %}show active{% endif %}" id="response" role="tabpanel" aria-labelledby="response-tab" tabindex="0">
+          <div class="section-panel mb-3">
+            <h2 class="h5 mb-1">당사사고 대응방향</h2>
+            <p class="text-secondary">당사 재해내용을 입력하면 누적 데이터와 기존 사과문을 참고해 사과문과 대응 방향을 생성합니다. 생성 결과는 검토·수정 후 저장됩니다.</p>
+            <form method="post" action="{{ url_for('company_accident_generate') }}">
+              <label class="form-label" for="incident_description">재해내용</label>
+              <textarea class="form-control" id="incident_description" name="incident_description" rows="5" required placeholder="사고 일시, 장소, 피해 현황, 현재 확인된 원인, 즉시 조치사항을 입력"></textarea>
+              <div class="d-flex justify-content-end mt-2">
+                <button class="btn btn-primary" type="submit">
+                  <i class="bi bi-magic"></i>
+                  대응방향
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {% if company_draft %}
+            <div class="section-panel mb-3 generated-draft">
+              <h3 class="h6 mb-3">생성 결과 검토</h3>
+              <form method="post" action="{{ url_for('company_accident_save') }}">
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label" for="draft_incident_description">입력 재해내용</label>
+                    <textarea class="form-control" id="draft_incident_description" name="incident_description" rows="4" required>{{ company_draft.incident_description }}</textarea>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label" for="draft_apology_text">언론 배포용 사과문</label>
+                    <textarea class="form-control" id="draft_apology_text" name="apology_text" rows="9">{{ company_draft.apology_text }}</textarea>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label" for="draft_response_direction">회사 대응 방향</label>
+                    <textarea class="form-control" id="draft_response_direction" name="response_direction" rows="9">{{ company_draft.response_direction }}</textarea>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-end mt-3">
+                  <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-save"></i>
+                    저장
+                  </button>
+                </div>
+              </form>
+            </div>
+          {% endif %}
+
+          <div class="response-grid">
+            {% for row in company_accidents %}
+              <article class="section-panel response-item">
+                <div class="section-title-row">
+                  <div>
+                    <h3 class="h6 mb-1">생성 기록 #{{ row.id }}</h3>
+                    <div class="small text-secondary">{{ row.created_at }}</div>
+                  </div>
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button
+                      class="btn btn-outline-primary"
+                      type="button"
+                      data-edit-company-accident
+                      data-id="{{ row.id }}"
+                      data-incident-description="{{ row.incident_description|e }}"
+                      data-apology-text="{{ row.apology_text|e }}"
+                      data-response-direction="{{ row.response_direction|e }}"
+                      data-bs-toggle="modal"
+                      data-bs-target="#companyAccidentEditModal">
+                      <i class="bi bi-pencil-square"></i>
+                      수정
+                    </button>
+                    <form method="post" action="{{ url_for('company_accident_delete', accident_id=row.id) }}" data-confirm="이 당사 사고 대응 기록을 삭제할까요?">
+                      <button class="btn btn-outline-danger" type="submit">
+                        <i class="bi bi-trash"></i>
+                        삭제
+                      </button>
+                    </form>
+                  </div>
+                </div>
+                <div class="response-columns">
+                  <div>
+                    <h4 class="response-label">입력 재해내용</h4>
+                    <p class="multiline">{{ row.incident_description }}</p>
+                  </div>
+                  <div>
+                    <h4 class="response-label">언론 배포용 사과문</h4>
+                    <p class="multiline">{{ row.apology_text }}</p>
+                  </div>
+                  <div>
+                    <h4 class="response-label">회사 대응 방향</h4>
+                    <p class="multiline">{{ row.response_direction }}</p>
+                  </div>
+                </div>
+              </article>
+            {% else %}
+              <div class="section-panel">
+                <p class="text-secondary mb-0">생성된 당사 사고 대응 기록이 없습니다.</p>
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div class="modal fade" id="speechEditModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <form id="speechEditForm" method="post">
+            <div class="modal-header">
+              <h2 class="modal-title h5">주요인사 발언 수정</h2>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row g-2">
+                <div class="col-6 col-lg-3">
+                  <label class="form-label" for="speech_edit_date">날짜</label>
+                  <input class="form-control" id="speech_edit_date" name="speech_date" type="date">
+                </div>
+                <div class="col-6 col-lg-3">
+                  <label class="form-label" for="speech_edit_actor">대상인물</label>
+                  <input class="form-control" id="speech_edit_actor" name="actor">
+                </div>
+                <div class="col-12 col-lg-6">
+                  <label class="form-label" for="speech_edit_organization">기관</label>
+                  <input class="form-control" id="speech_edit_organization" name="organization">
+                </div>
+                <div class="col-12">
+                  <label class="form-label" for="speech_edit_venue">발언장소</label>
+                  <input class="form-control" id="speech_edit_venue" name="venue">
+                </div>
+                <div class="col-12">
+                  <label class="form-label" for="speech_edit_quote">주요발언내용</label>
+                  <textarea class="form-control" id="speech_edit_quote" name="quote" rows="4"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label" for="speech_edit_keywords">핵심키워드</label>
+                  <input class="form-control" id="speech_edit_keywords" name="keywords">
+                </div>
+                <div class="col-12 col-lg-8">
+                  <label class="form-label" for="speech_edit_source_title">기사출처</label>
+                  <input class="form-control" id="speech_edit_source_title" name="source_title">
+                </div>
+                <div class="col-12 col-lg-4">
+                  <label class="form-label" for="speech_edit_source_name">출처명</label>
+                  <input class="form-control" id="speech_edit_source_name" name="source_name">
+                </div>
+                <div class="col-12">
+                  <label class="form-label" for="speech_edit_source_url">출처 URL</label>
+                  <input class="form-control" id="speech_edit_source_url" name="source_url" type="url">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">닫기</button>
+              <button type="submit" class="btn btn-primary">저장</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="incidentEditModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <form id="incidentEditForm" method="post">
+            <div class="modal-header">
+              <h2 class="modal-title h5">중대재해 사례 수정</h2>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row g-2">
+                <div class="col-6 col-lg-3">
+                  <label class="form-label" for="incident_edit_date">사고일</label>
+                  <input class="form-control" id="incident_edit_date" name="accident_date" type="date">
+                </div>
+                <div class="col-6 col-lg-3">
+                  <label class="form-label" for="incident_edit_company">회사명</label>
+                  <input class="form-control" id="incident_edit_company" name="company_name">
+                </div>
+                <div class="col-12 col-lg-6">
+                  <label class="form-label" for="incident_edit_source_name">출처명</label>
+                  <input class="form-control" id="incident_edit_source_name" name="source_name">
+                </div>
+                <div class="col-12">
+                  <label class="form-label" for="incident_edit_summary">사고내용</label>
+                  <textarea class="form-control" id="incident_edit_summary" name="accident_summary" rows="3"></textarea>
+                </div>
+                <div class="col-12 col-lg-6">
+                  <label class="form-label" for="incident_edit_response">대외대응</label>
+                  <textarea class="form-control" id="incident_edit_response" name="external_response" rows="4"></textarea>
+                </div>
+                <div class="col-12 col-lg-6">
+                  <label class="form-label" for="incident_edit_implication">시사점</label>
+                  <textarea class="form-control" id="incident_edit_implication" name="implication" rows="4"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label" for="incident_edit_apology">사과문</label>
+                  <textarea class="form-control" id="incident_edit_apology" name="apology_text" rows="5"></textarea>
+                </div>
+                <div class="col-12 col-lg-8">
+                  <label class="form-label" for="incident_edit_source_title">대표출처</label>
+                  <input class="form-control" id="incident_edit_source_title" name="source_title">
+                </div>
+                <div class="col-12 col-lg-4">
+                  <label class="form-label" for="incident_edit_source_url">출처 URL</label>
+                  <input class="form-control" id="incident_edit_source_url" name="source_url" type="url">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">닫기</button>
+              <button type="submit" class="btn btn-primary">저장</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="companyAccidentEditModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <form id="companyAccidentEditForm" method="post">
+            <div class="modal-header">
+              <h2 class="modal-title h5">당사 사고 대응 기록 수정</h2>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label" for="company_edit_description">입력 재해내용</label>
+                  <textarea class="form-control" id="company_edit_description" name="incident_description" rows="4" required></textarea>
+                </div>
+                <div class="col-12 col-lg-6">
+                  <label class="form-label" for="company_edit_apology">언론 배포용 사과문</label>
+                  <textarea class="form-control" id="company_edit_apology" name="apology_text" rows="9"></textarea>
+                </div>
+                <div class="col-12 col-lg-6">
+                  <label class="form-label" for="company_edit_response">회사 대응 방향</label>
+                  <textarea class="form-control" id="company_edit_response" name="response_direction" rows="9"></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">닫기</button>
+              <button type="submit" class="btn btn-primary">저장</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  </body>
+</html>
