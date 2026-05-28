@@ -1,0 +1,277 @@
+:root {
+  --app-bg: #f6f7f9;
+  --app-surface: #ffffff;
+  --app-border: #dfe3e8;
+  --app-muted: #667085;
+  --app-text: #1f2937;
+  --app-accent: #0f766e;
+  --app-accent-strong: #0b5d56;
+}
+
+body {
+  background: var(--app-bg);
+  color: var(--app-text);
+  font-size: 0.94rem;
+}
+
+.app-header {
+  background: var(--app-surface);
+}
+
+.app-header h1 {
+  letter-spacing: 0;
+}
+
+.collect-form .form-control {
+  min-width: 9.5rem;
+}
+
+.csv-upload-form {
+  align-items: center;
+}
+
+.csv-file-input {
+  max-width: 16rem;
+}
+
+.btn-primary {
+  background: var(--app-accent);
+  border-color: var(--app-accent);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: var(--app-accent-strong);
+  border-color: var(--app-accent-strong);
+}
+
+.btn-outline-primary {
+  border-color: var(--app-accent);
+  color: var(--app-accent);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background: var(--app-accent);
+  border-color: var(--app-accent);
+}
+
+.app-tabs {
+  border-bottom-color: var(--app-border);
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+}
+
+.app-tabs .nav-link {
+  white-space: nowrap;
+  color: #475467;
+}
+
+.app-tabs .nav-link.active {
+  color: var(--app-accent);
+  font-weight: 700;
+}
+
+.section-panel,
+.table-panel {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.analysis-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.analysis-text {
+  border-left: 3px solid var(--app-accent);
+  padding-left: 0.85rem;
+  white-space: pre-line;
+  line-height: 1.7;
+}
+
+.summary-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.preview-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.preview-title {
+  color: #344054;
+  font-size: 0.86rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.preview-table {
+  border: 1px solid #edf0f2;
+  border-radius: 8px;
+  max-height: 22rem;
+}
+
+.summary-item {
+  border-top: 1px solid #edf0f2;
+  padding-top: 0.75rem;
+}
+
+.summary-item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.summary-body,
+.wide-text,
+.multiline {
+  white-space: pre-line;
+  line-height: 1.55;
+}
+
+.data-search-answer {
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+.search-evidence-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.search-evidence {
+  border-top: 1px solid #edf0f2;
+  padding-top: 0.75rem;
+}
+
+.search-evidence:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.generated-draft {
+  border-color: #b6d7d3;
+}
+
+.data-table {
+  min-width: 1120px;
+  margin-bottom: 0;
+}
+
+.incident-table {
+  min-width: 1480px;
+}
+
+.incident-table .incident-actions-cell {
+  background: var(--app-surface);
+  box-shadow: 1px 0 0 var(--app-border);
+  left: 0;
+  position: sticky;
+  z-index: 2;
+}
+
+.incident-table th.incident-actions-cell {
+  background: #f8fafb;
+  z-index: 3;
+}
+
+.data-table th {
+  background: #f8fafb;
+  color: #344054;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.data-table td {
+  vertical-align: top;
+}
+
+.wide-text {
+  min-width: 14rem;
+  max-width: 28rem;
+}
+
+.actions-col {
+  width: 11rem;
+}
+
+.btn-group form {
+  display: inline-flex;
+}
+
+.response-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.response-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.response-label {
+  color: var(--app-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.response-item p {
+  margin-bottom: 0;
+}
+
+textarea {
+  resize: vertical;
+}
+
+@media (max-width: 991.98px) {
+  .section-title-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .response-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .collect-form {
+    width: 100%;
+  }
+
+  .collect-form .form-control {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 575.98px) {
+  body {
+    font-size: 0.9rem;
+  }
+
+  .section-panel,
+  .table-panel {
+    padding: 0.8rem;
+  }
+
+  .btn {
+    white-space: nowrap;
+  }
+}
