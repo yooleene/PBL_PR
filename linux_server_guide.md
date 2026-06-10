@@ -110,11 +110,13 @@ deactivate
 ## 5. 최초 테스트 실행
 
 서버 터미널에서 먼저 직접 실행해 import 오류와 `.env` 설정을 확인합니다.
+`python3 app.py` 직접 실행 시 기본 포트는 `5001`입니다(맥 로컬 개발 기준).
+운영 gunicorn은 `5000`을 사용하므로, 테스트도 운영 포트(5000)에 맞추려면 아래처럼 포트를 지정해 실행합니다.
 
 ```bash
 cd /root/pr
 source venv/bin/activate
-python3 app.py
+FLASK_PORT=5000 python3 app.py
 ```
 
 정상 실행 시 내부 포트에서 Flask가 실행됩니다.
