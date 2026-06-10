@@ -1,0 +1,335 @@
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border, var(--bd, var(--app-border, #2a3645)));
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.015);
+  color: var(--dim, var(--app-muted, #9aa8b8));
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: #3a4a5d;
+  color: var(--text, var(--tx, var(--app-text, #eef3f8)));
+}
+
+.theme-toggle.is-floating {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  backdrop-filter: blur(12px);
+}
+
+html[data-theme="white"] {
+  --bg: #f3f7fb;
+  --sf: #ffffff;
+  --sf2: #fbfdff;
+  --sf3: #f5f9fd;
+  --bd: #d9e1ea;
+  --bd2: #b8c6d8;
+  --tx: #172033;
+  --dim: #667085;
+  --muted: #98a2b3;
+  --ac: #0b6fdb;
+  --ac2: #004b93;
+  --ok: #138a72;
+  --ng: #e7344f;
+  --wn: #ffb000;
+  --surface: #ffffff;
+  --surface2: #fbfdff;
+  --surface3: #f5f9fd;
+  --border: #d9e1ea;
+  --text: #172033;
+  --accent: #0b6fdb;
+  --accent-strong: #004b93;
+  --accent-soft: rgba(11, 111, 219, 0.12);
+  --success: #138a72;
+  --warning: #ffb000;
+  --danger: #e7344f;
+  --ink: #172033;
+  --line: #d9e1ea;
+  --brand: #0b6fdb;
+  --brand-dark: #004b93;
+  --soft: #f3f7fb;
+  --app-bg: #f3f7fb;
+  --app-surface: #ffffff;
+  --app-surface-2: #fbfdff;
+  --app-surface-3: #f5f9fd;
+  --app-border: #d9e1ea;
+  --app-border-strong: #b8c6d8;
+  --app-muted: #667085;
+  --app-muted-2: #98a2b3;
+  --app-text: #172033;
+  --app-accent: #0b6fdb;
+  --app-accent-strong: #004b93;
+  --app-accent-soft: rgba(11, 111, 219, 0.12);
+}
+
+html[data-theme="white"] body {
+  background:
+    radial-gradient(circle at 50% -220px, rgba(11, 111, 219, 0.12), transparent 380px),
+    #f3f7fb !important;
+  color: #172033 !important;
+}
+
+html[data-theme="white"] nav,
+html[data-theme="white"] .app-header,
+html[data-theme="white"] .analysis-header {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: #d9e1ea !important;
+  color: #172033 !important;
+}
+
+html[data-theme="white"] .hero-band,
+html[data-theme="white"] .analysis-result-page,
+html[data-theme="white"] .progress-page {
+  background:
+    radial-gradient(circle at 50% -220px, rgba(11, 111, 219, 0.12), transparent 380px),
+    #f3f7fb !important;
+}
+
+html[data-theme="white"] .search-panel,
+html[data-theme="white"] .work-panel,
+html[data-theme="white"] .result-panel,
+html[data-theme="white"] .profile-hero,
+html[data-theme="white"] .result-card,
+html[data-theme="white"] .analysis-card,
+html[data-theme="white"] .info-card,
+html[data-theme="white"] .interest-item,
+html[data-theme="white"] .keyword-panel,
+html[data-theme="white"] .keyword-rank-item,
+html[data-theme="white"] .summary-stack section,
+html[data-theme="white"] .talk-card,
+html[data-theme="white"] .talking-strategy-card,
+html[data-theme="white"] .section-panel,
+html[data-theme="white"] .table-panel,
+html[data-theme="white"] .modal-content,
+html[data-theme="white"] .card,
+html[data-theme="white"] .panel,
+html[data-theme="white"] .exec-card,
+html[data-theme="white"] .vc,
+html[data-theme="white"] .rd,
+html[data-theme="white"] .toc-card,
+html[data-theme="white"] .sc,
+html[data-theme="white"] .summary-item,
+html[data-theme="white"] .kpi,
+html[data-theme="white"] .empty {
+  background: #ffffff !important;
+  border-color: #d9e1ea !important;
+  color: #172033 !important;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06) !important;
+}
+
+html[data-theme="white"] .exec-card {
+  background: linear-gradient(180deg, #ffffff, #fbfdff) !important;
+}
+
+html[data-theme="white"] .search-heading h1,
+html[data-theme="white"] .profile-copy h1,
+html[data-theme="white"] .result-card h2,
+html[data-theme="white"] .interest-item strong,
+html[data-theme="white"] .summary-stack strong,
+html[data-theme="white"] .talk-card strong,
+html[data-theme="white"] .keyword-rank-head strong,
+html[data-theme="white"] .talking-strategy-card h2,
+html[data-theme="white"] .talking-section-title,
+html[data-theme="white"] .analysis-card h1,
+html[data-theme="white"] .app-header h1,
+html[data-theme="white"] h1,
+html[data-theme="white"] h2,
+html[data-theme="white"] h3,
+html[data-theme="white"] h4,
+html[data-theme="white"] h5,
+html[data-theme="white"] h6,
+html[data-theme="white"] .nl,
+html[data-theme="white"] .nav-logo,
+html[data-theme="white"] .rc strong,
+html[data-theme="white"] .nav-pill strong,
+html[data-theme="white"] .summary-item .v,
+html[data-theme="white"] .exec-body {
+  color: #172033 !important;
+}
+
+html[data-theme="white"] .search-heading .lead,
+html[data-theme="white"] .form-text,
+html[data-theme="white"] .profile-meta,
+html[data-theme="white"] .article-summary,
+html[data-theme="white"] .interest-item p,
+html[data-theme="white"] .summary-stack p,
+html[data-theme="white"] .talk-card p,
+html[data-theme="white"] .muted-text,
+html[data-theme="white"] .analysis-message,
+html[data-theme="white"] .analysis-progress-meta,
+html[data-theme="white"] .analysis-step p,
+html[data-theme="white"] .talk-reason,
+html[data-theme="white"] .text-secondary,
+html[data-theme="white"] .sub,
+html[data-theme="white"] .vs,
+html[data-theme="white"] .v-empty,
+html[data-theme="white"] .summary-note,
+html[data-theme="white"] .nav-pill,
+html[data-theme="white"] .nl span,
+html[data-theme="white"] .nav-logo span {
+  color: #667085 !important;
+}
+
+html[data-theme="white"] .form-control,
+html[data-theme="white"] .form-select,
+html[data-theme="white"] input,
+html[data-theme="white"] textarea,
+html[data-theme="white"] select {
+  background-color: #ffffff !important;
+  border-color: #d9e1ea !important;
+  color: #172033 !important;
+}
+
+html[data-theme="white"] .form-control:focus,
+html[data-theme="white"] .form-select:focus,
+html[data-theme="white"] input:focus,
+html[data-theme="white"] textarea:focus,
+html[data-theme="white"] select:focus {
+  background-color: #ffffff !important;
+  border-color: #0b6fdb !important;
+  box-shadow: 0 0 0 0.2rem rgba(11, 111, 219, 0.18) !important;
+}
+
+html[data-theme="white"] .theme-toggle,
+html[data-theme="white"] .nav-link,
+html[data-theme="white"] .nav-links a,
+html[data-theme="white"] .na a,
+html[data-theme="white"] .na button,
+html[data-theme="white"] .result-action,
+html[data-theme="white"] .article-link,
+html[data-theme="white"] .search-button,
+html[data-theme="white"] .mode-button,
+html[data-theme="white"] .bg {
+  background: #ffffff !important;
+  border-color: #d9e1ea !important;
+  color: #667085 !important;
+}
+
+html[data-theme="white"] .theme-toggle:hover,
+html[data-theme="white"] .nav-link:hover,
+html[data-theme="white"] .nav-links a:hover,
+html[data-theme="white"] .na a:hover,
+html[data-theme="white"] .na button:hover,
+html[data-theme="white"] .result-action:hover,
+html[data-theme="white"] .article-link:hover,
+html[data-theme="white"] .search-button:hover,
+html[data-theme="white"] .mode-button:hover {
+  background: rgba(11, 111, 219, 0.1) !important;
+  border-color: #0b6fdb !important;
+  color: #0b6fdb !important;
+}
+
+html[data-theme="white"] .btn-primary,
+html[data-theme="white"] .media-pill,
+html[data-theme="white"] .keyword-rank-number,
+html[data-theme="white"] .talk-card > span,
+html[data-theme="white"] .bp {
+  background: #0b6fdb !important;
+  border-color: #0b6fdb !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="white"] .btn-primary:hover,
+html[data-theme="white"] .bp:hover {
+  background: #004b93 !important;
+  border-color: #004b93 !important;
+}
+
+html[data-theme="white"] .app-tabs,
+html[data-theme="white"] .result-tabs,
+html[data-theme="white"] .progress-track,
+html[data-theme="white"] .bar,
+html[data-theme="white"] .analysis-progress,
+html[data-theme="white"] .analysis-steps,
+html[data-theme="white"] .keyword-rank-track {
+  background: #fbfdff !important;
+  border-color: #d9e1ea !important;
+}
+
+html[data-theme="white"] .app-tabs .nav-link.active,
+html[data-theme="white"] .result-tab.active,
+html[data-theme="white"] .tab-btn.on,
+html[data-theme="white"] .keyword-rank-head em,
+html[data-theme="white"] .interest-item strong span,
+html[data-theme="white"] .badge-company {
+  background: rgba(11, 111, 219, 0.12) !important;
+  border-color: rgba(11, 111, 219, 0.28) !important;
+  color: #0754aa !important;
+}
+
+html[data-theme="white"] .table,
+html[data-theme="white"] .data-table,
+html[data-theme="white"] .rc table {
+  --bs-table-bg: #ffffff;
+  --bs-table-color: #172033;
+  --bs-table-border-color: #d9e1ea;
+  --bs-table-hover-bg: #f5f9fd;
+  color: #172033 !important;
+  border-color: #d9e1ea !important;
+}
+
+html[data-theme="white"] .table th,
+html[data-theme="white"] .data-table th,
+html[data-theme="white"] .rc thead th {
+  background: #f3f7fb !important;
+  border-color: #d9e1ea !important;
+  color: #243044 !important;
+}
+
+html[data-theme="white"] .table td,
+html[data-theme="white"] .data-table td,
+html[data-theme="white"] .rc tbody td,
+html[data-theme="white"] .article-row,
+html[data-theme="white"] .doc-item,
+html[data-theme="white"] .modal-header,
+html[data-theme="white"] .modal-footer,
+html[data-theme="white"] .step + .step {
+  border-color: #d9e1ea !important;
+}
+
+html[data-theme="white"] .tone-summary,
+html[data-theme="white"] .exclusive-box,
+html[data-theme="white"] .alert-warning {
+  background: #fffaf0 !important;
+  border-color: #ffd8a8 !important;
+  color: #243044 !important;
+}
+
+html[data-theme="white"] .drop-zone,
+html[data-theme="white"] .empty,
+html[data-theme="white"] .step-i,
+html[data-theme="white"] .step-dot,
+html[data-theme="white"] .analysis-spinner span,
+html[data-theme="white"] .nav-pill,
+html[data-theme="white"] .summary-meta span {
+  background: #fbfdff !important;
+  border-color: #d9e1ea !important;
+  color: #667085 !important;
+}
+
+html[data-theme="white"] .loading,
+html[data-theme="white"] .ov {
+  background: rgba(243, 247, 251, 0.88) !important;
+}
+
+@media (max-width: 640px) {
+  .theme-toggle.is-floating {
+    top: 10px;
+    right: 10px;
+  }
+}

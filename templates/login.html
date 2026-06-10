@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>로그인 | PR Project Hub</title>
+    <style>
+      :root {
+        --bg: #f6f8fb;
+        --ink: #172033;
+        --muted: #667085;
+        --line: #d8dee8;
+        --teal: #00897b;
+        --violet: #6750d8;
+        --danger: #c7352d;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+        background:
+          radial-gradient(circle at 18% 18%, rgba(0, 137, 123, 0.15), transparent 26rem),
+          radial-gradient(circle at 82% 16%, rgba(103, 80, 216, 0.13), transparent 25rem),
+          linear-gradient(145deg, #f6f8fb 0%, #eef3f8 48%, #f8f6f2 100%);
+      }
+
+      main {
+        display: grid;
+        min-height: 100vh;
+        place-items: center;
+        padding: 28px;
+      }
+
+      .login-card {
+        width: min(420px, 100%);
+        padding: 30px;
+        border: 1px solid rgba(23, 32, 51, 0.1);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 24px 70px rgba(23, 32, 51, 0.13);
+        backdrop-filter: blur(18px);
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 1.6rem;
+        letter-spacing: 0;
+      }
+
+      p {
+        margin: 0 0 24px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        font-weight: 750;
+      }
+
+      input {
+        width: 100%;
+        min-height: 46px;
+        margin-bottom: 16px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        font: inherit;
+        background: #fff;
+      }
+
+      input:focus {
+        border-color: var(--teal);
+        box-shadow: 0 0 0 4px rgba(0, 137, 123, 0.12);
+        outline: none;
+      }
+
+      button {
+        width: 100%;
+        min-height: 48px;
+        border: 0;
+        border-radius: 8px;
+        color: #fff;
+        font: inherit;
+        font-weight: 820;
+        background: linear-gradient(135deg, var(--teal), var(--violet));
+        cursor: pointer;
+      }
+
+      .alert {
+        margin-bottom: 16px;
+        padding: 11px 12px;
+        border: 1px solid rgba(199, 53, 45, 0.18);
+        border-radius: 8px;
+        color: var(--danger);
+        background: rgba(199, 53, 45, 0.08);
+        font-size: 0.92rem;
+        font-weight: 680;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="login-card" aria-labelledby="login-title">
+        <h1 id="login-title">PR Project Hub</h1>
+        <p>내부 업무 도구는 로그인 후 사용할 수 있습니다.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert" role="alert">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form method="post">
+          <label for="username">아이디</label>
+          <input id="username" name="username" autocomplete="username" required autofocus>
+
+          <label for="password">비밀번호</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+          <button type="submit">로그인</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

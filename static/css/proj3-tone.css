@@ -1,0 +1,216 @@
+/* proj3 (이슈 분석 AI) — 기준 다크 톤 */
+
+:root {
+  --bg: #0b1016 !important;
+  --surface: #111820 !important;
+  --surface2: #17212b !important;
+  --surface3: #1d2935 !important;
+  --border: #2a3645 !important;
+  --text: #eef3f8 !important;
+  --dim: #9aa8b8 !important;
+  --muted: #708092 !important;
+  --accent: #3b82f6 !important;
+  --accent-strong: #2563eb !important;
+  --accent-soft: rgba(59, 130, 246, 0.14) !important;
+  --success: #22c7a9 !important;
+  --warning: #f5b84b !important;
+  --danger: #ef6f73 !important;
+}
+
+/* === body 배경 === */
+body {
+  background:
+    radial-gradient(circle at 50% -220px, rgba(59, 130, 246, 0.16), transparent 380px),
+    var(--bg) !important;
+  color: var(--text) !important;
+  font-family: "Segoe UI", "Noto Sans KR", Arial, sans-serif !important;
+}
+
+/* === nav (proj3 상단 글로벌 nav) === */
+nav {
+  background: rgba(11, 16, 22, 0.9) !important;
+  border-bottom: 1px solid var(--border) !important;
+  backdrop-filter: blur(12px);
+}
+
+.nav-link {
+  color: var(--dim) !important;
+  background: rgba(255, 255, 255, 0.015) !important;
+  border-color: var(--border) !important;
+}
+
+.nav-link:hover {
+  color: var(--text) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: #3a4a5d !important;
+}
+
+.nav-logo {
+  color: var(--text) !important;
+}
+
+.nav-logo span {
+  color: var(--dim) !important;
+}
+
+.nav-logo .mark {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent) !important;
+  color: #9fc4ff !important;
+}
+
+/* === 카드/패널 === */
+.card,
+.section-card,
+.panel,
+.box,
+.result-card,
+.doc-card,
+.progress-card,
+.upload-card,
+.list-card,
+.empty-state,
+.search-evidence {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* === 헤딩 === */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text) !important;
+}
+
+.hero h1 {
+  color: var(--text) !important;
+}
+
+.hero p,
+.dim,
+.muted,
+.text-dim,
+.text-muted {
+  color: var(--dim) !important;
+}
+
+/* === 입력 폼 === */
+input,
+textarea,
+select {
+  background: var(--surface2) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 0.2rem var(--accent-soft) !important;
+  outline: none !important;
+}
+
+/* === 버튼 === */
+.btn-primary,
+button.primary,
+.primary-btn,
+button[type="submit"] {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+}
+
+.btn-primary:hover,
+button.primary:hover,
+.primary-btn:hover,
+button[type="submit"]:hover {
+  background: var(--accent-strong) !important;
+  border-color: var(--accent-strong) !important;
+}
+
+.btn-secondary,
+button.secondary,
+.secondary-btn {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+.btn-secondary:hover,
+button.secondary:hover,
+.secondary-btn:hover {
+  background: var(--surface2) !important;
+}
+
+/* === eyebrow / 카드 라벨 === */
+.eyebrow,
+.card-label,
+.kicker {
+  background: var(--accent-soft) !important;
+  color: var(--accent-strong) !important;
+  border-color: transparent !important;
+}
+
+/* === 강조 컬러 === */
+.accent,
+.text-accent,
+[style*="color: #3b82f6"],
+[style*="color:#3b82f6"] {
+  color: var(--accent) !important;
+}
+
+/* === 테이블 === */
+table {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+th {
+  background: var(--surface2) !important;
+  color: #9fc4ff !important;
+  border-color: var(--border) !important;
+}
+
+td {
+  border-color: var(--border) !important;
+}
+
+/* === pre/code === */
+pre,
+code {
+  background: var(--surface2) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+/* === 알림/상태 === */
+.alert,
+.notice,
+.warn,
+.error {
+  background: var(--surface2) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+/* === 진행 표시 === */
+.progress-bar,
+.progress-fill {
+  background: var(--accent) !important;
+}
+
+.progress-track,
+.progress-bg {
+  background: var(--border) !important;
+}
+
+/* === 아이콘 === */
+.icon {
+  color: currentColor !important;
+}

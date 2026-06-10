@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이슈 분석 AI | Module 3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>(function(){document.documentElement.dataset.theme=localStorage.getItem('pr-module-theme')==='white'?'white':'black';})();</script>
+    <style>
+        :root {
+            --bg: #0b1016;
+            --surface: #111820;
+            --surface2: #17212b;
+            --surface3: #1d2935;
+            --border: #2a3645;
+            --text: #eef3f8;
+            --dim: #9aa8b8;
+            --muted: #708092;
+            --accent: #3b82f6;
+            --accent-strong: #2563eb;
+            --accent-soft: rgba(59,130,246,0.14);
+            --success: #22c7a9;
+            --warning: #f5b84b;
+            --danger: #ef6f73;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background:
+                radial-gradient(circle at 50% -220px, rgba(59,130,246,.16), transparent 380px),
+                var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            background: rgba(11,16,22,0.88);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+        }
+        .nav-inner {
+            max-width: 1180px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 58px;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 0;
+        }
+        .nav-logo .mark {
+            width: 28px;
+            height: 28px;
+            border: 1px solid rgba(59,130,246,.45);
+            background: linear-gradient(135deg, rgba(59,130,246,.24), rgba(34,199,169,.14));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+        .nav-logo span { color: var(--dim); font-weight: 500; }
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--dim);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 8px 12px;
+            border-radius: 7px;
+            border: 1px solid var(--border);
+            font-weight: 600;
+            transition: all .2s ease;
+            background: rgba(255,255,255,.015);
+        }
+        .nav-link:hover { color: var(--text); border-color: #3a4a5d; background: rgba(255,255,255,.035); }
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 36px 24px;
+        }
+        .container { max-width: 640px; width: 100%; }
+        .hero { text-align: center; margin-bottom: 30px; }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 10px;
+            border: 1px solid rgba(34,199,169,.28);
+            border-radius: 999px;
+            color: var(--success);
+            background: rgba(34,199,169,.08);
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+        .hero h1 { font-size: 34px; font-weight: 900; letter-spacing: 0; margin-bottom: 10px; }
+        .hero p { color: var(--dim); font-size: 14px; line-height: 1.8; }
+        .card {
+            background: rgba(17,24,32,.96);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 26px;
+            box-shadow: 0 18px 45px rgba(0,0,0,.2);
+        }
+        .card-label {
+            font-size: 12px;
+            font-weight: 800;
+            color: #8fb8ff;
+            letter-spacing: 0;
+            margin-bottom: 16px;
+        }
+        input[type="text"], select {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            color: var(--text);
+            padding: 14px 16px;
+            font-family: inherit;
+            font-size: 15px;
+            transition: border-color 0.2s, box-shadow .2s, background .2s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239aa8b8' fill='none' stroke-width='1.7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+        select option { background: var(--surface2); color: var(--text); }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59,130,246,.18);
+            background: #1b2733;
+        }
+        input::placeholder { color: #8997a8; }
+        label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 7px; font-weight: 700; }
+        .quick-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .quick-chip {
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,.018);
+            color: var(--dim);
+            border-radius: 999px;
+            padding: 7px 11px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all .2s ease;
+        }
+        .quick-chip:hover, .quick-chip.active {
+            color: var(--text);
+            border-color: rgba(59,130,246,.48);
+            background: rgba(59,130,246,.12);
+            transform: translateY(-1px);
+        }
+        .company-desc {
+            margin-top: 10px;
+            padding: 12px 14px;
+            background: rgba(59,130,246,0.07);
+            border: 1px solid rgba(59,130,246,0.18);
+            border-radius: 7px;
+            font-size: 12px;
+            color: var(--dim);
+            line-height: 1.75;
+            display: none;
+        }
+        .company-desc.active { display: block; }
+        .company-desc strong { color: #a9c9ff; }
+        .btn {
+            width: 100%;
+            margin-top: 18px;
+            padding: 15px 16px;
+            background: var(--accent-strong);
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, box-shadow .2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 10px 26px rgba(37,99,235,.18);
+        }
+        .btn:hover { background: #1d5fd6; transform: translateY(-1px); box-shadow: 0 14px 32px rgba(37,99,235,.22); }
+        .info {
+            margin-top: 18px;
+            background: rgba(23,33,43,.86);
+            border: 1px solid rgba(42,54,69,.78);
+            border-radius: 8px;
+            padding: 18px 20px;
+            font-size: 13px;
+            color: var(--dim);
+            line-height: 2;
+        }
+        .info-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .loading {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(11,16,22,0.92);
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 18px;
+        }
+        .loading.active { display: flex; }
+        .spinner {
+            width: 42px;
+            height: 42px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading p { color: var(--dim); font-size: 14px; }
+        .loading .sub { font-size: 12px; color: var(--muted); }
+        .icon { width: 16px; height: 16px; stroke-width: 2; }
+        .mark .icon { width: 15px; height: 15px; }
+        @media (max-width: 640px) {
+            nav { padding: 0 16px; }
+            main { padding: 28px 16px; align-items: flex-start; }
+            .hero h1 { font-size: 28px; }
+            .hero p br { display: none; }
+            .card { padding: 20px; }
+        }
+    </style>
+    <link href="{{ url_for('static', filename='css/theme-toggle.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <div class="nav-logo"><span class="mark"><i data-lucide="activity" class="icon"></i></span>이슈분석 AI <span>Module 3</span></div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button class="nav-link theme-toggle" type="button" data-theme-toggle></button>
+                <a href="{{ url_for('proj3.documents') }}" class="nav-link"><i data-lucide="folder-open" class="icon"></i>자료관리</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            <div class="hero">
+                <div class="eyebrow"><i data-lucide="radar" class="icon"></i>PR Issue Intelligence</div>
+                <h1>이슈 분석 AI</h1>
+                <p>키워드를 입력하면 최신 뉴스와 내부 자료를 기반으로<br>사업회사 관점의 이슈 분석 리포트를 생성합니다.</p>
+            </div>
+
+            <form action="{{ url_for('proj3.analyze') }}" method="POST" onsubmit="showLoading()">
+                <div class="card">
+                    <div class="card-label">분석 설정</div>
+
+                    <label>사업회사 선택</label>
+                    <select name="company_name" id="companySelect" onchange="updateCompanyDesc()">
+                        <option value="포스코홀딩스">포스코홀딩스</option>
+                        <option value="포스코이앤씨">포스코이앤씨</option>
+                        <option value="포스코인터내셔널">포스코인터내셔널</option>
+                        <option value="포스코퓨처엠">포스코퓨처엠</option>
+                    </select>
+
+                    <div class="company-desc active" id="desc_포스코홀딩스">
+                        <strong>포스코홀딩스</strong> - 그룹 지주회사. 철강, 소재, 에너지, 인프라 등 그룹 전략 총괄. ESG·거버넌스·지배구조 이슈 중심.
+                    </div>
+                    <div class="company-desc" id="desc_포스코이앤씨">
+                        <strong>포스코이앤씨</strong> - 건설·엔지니어링. 플랜트, 주택건설(더샵), 도시개발 등. 안전·부동산·건설경기 이슈 중심.
+                    </div>
+                    <div class="company-desc" id="desc_포스코인터내셔널">
+                        <strong>포스코인터내셔널</strong> - 트레이딩·자원개발. 곡물, LNG, 미얀마 가스전 등. 통상·지정학·공급망 이슈 중심.
+                    </div>
+                    <div class="company-desc" id="desc_포스코퓨처엠">
+                        <strong>포스코퓨처엠</strong> - 2차전지 소재. 양극재·음극재 생산. 배터리·전기차·광물확보 이슈 중심.
+                    </div>
+
+                    <div style="margin-top: 18px;">
+                        <label>분석 키워드</label>
+                        <input type="text" name="keyword" id="keywordInput" placeholder="예: 노란봉투법, 반도체 수출규제, 리튬 공급망, 건설 안전" required autofocus>
+                        <div class="quick-row" aria-label="추천 키워드">
+                            <button type="button" class="quick-chip" data-keyword="노란봉투법">노란봉투법</button>
+                            <button type="button" class="quick-chip" data-keyword="리튬 공급망">리튬 공급망</button>
+                            <button type="button" class="quick-chip" data-keyword="건설 안전">건설 안전</button>
+                            <button type="button" class="quick-chip" data-keyword="탄소중립 규제">탄소중립 규제</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn"><i data-lucide="search" class="icon"></i>이슈 분석 시작</button>
+            </form>
+
+            <div class="info">
+                <div class="info-title"><i data-lucide="list-checks" class="icon"></i>분석 프로세스</div>
+                1. 네이버 뉴스에서 최신 기사 수집 및 본문 파싱<br>
+                2. 회사 내부 자료(RAG)에서 관련 내용 검색<br>
+                3. 사업회사 맥락과 정책·경쟁사·업계 동향 종합 분석<br>
+                4. 리스크 매트릭스, 원보이스 메시지, 대응 로드맵 생성
+            </div>
+        </div>
+    </main>
+
+    <div class="loading" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>AI가 이슈를 분석하고 있습니다...</p>
+        <p class="sub">뉴스 수집 → 사업회사 맥락 분석 → 리포트 생성 (약 30~50초)</p>
+    </div>
+
+    <script>
+    if (window.lucide) lucide.createIcons();
+    function showLoading() {
+        document.getElementById('loadingOverlay').classList.add('active');
+    }
+    function updateCompanyDesc() {
+        document.querySelectorAll('.company-desc').forEach(el => el.classList.remove('active'));
+        const name = document.getElementById('companySelect').value;
+        const desc = document.getElementById('desc_' + name);
+        if (desc) desc.classList.add('active');
+    }
+    document.querySelectorAll('.quick-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.quick-chip').forEach(x => x.classList.remove('active'));
+            btn.classList.add('active');
+            const input = document.getElementById('keywordInput');
+            input.value = btn.dataset.keyword;
+            input.focus();
+        });
+    });
+    </script>
+    <script src="{{ url_for('static', filename='js/theme-toggle.js') }}"></script>
+</body>
+</html>
