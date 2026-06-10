@@ -1,0 +1,8 @@
+<article class="article-row">
+  <div>
+    <h2 class="h6 mb-1">{{ article.title }}</h2>
+    <p class="mb-1 text-secondary">{{ article.date|display_date }} · {{ article.media }}</p>
+    <p class="article-summary">{{ article.summary or article.content[:180] }}</p>
+  </div>
+  <a class="article-link" href="{{ article.url }}" target="_blank" rel="noreferrer">원문</a>
+</article>

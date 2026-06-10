@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>분석 진행 중</title>
+  <script>(function(){document.documentElement.dataset.theme=localStorage.getItem('pr-module-theme')==='white'?'white':'black';})();</script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{ url_for('proj1.static', filename='style.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/theme-toggle.css') }}" rel="stylesheet">
+</head>
+<body class="progress-page">
+  <header class="analysis-header">
+    <div class="analysis-brand">
+      <span class="brand-icon">▦</span>
+      <strong>기자 분석기</strong>
+      <span class="brand-badge">POSCO PR</span>
+    </div>
+    <div class="analysis-actions">
+      <span class="analysis-purpose">포스코 홍보팀 전용</span>
+      <button class="mode-button theme-toggle" type="button" data-theme-toggle></button>
+      <a class="search-button" href="{{ url_for('proj1.index') }}">⌕ 새 검색</a>
+    </div>
+  </header>
+
+  <main class="progress-stage">
+    <section class="analysis-card" aria-live="polite">
+      <div class="analysis-spinner">
+        <span>▦</span>
+      </div>
+
+      <h1>기사 정보 분석 중</h1>
+      <p id="message" class="analysis-message">{{ job.message }}</p>
+
+      <div class="analysis-progress-meta">
+        <span>크롤링 → 분석</span>
+        <span id="percentText">{{ job.percent }}%</span>
+      </div>
+      <div class="analysis-progress" role="progressbar" aria-label="진행률">
+        <div id="bar" style="width: {{ job.percent }}%"></div>
+      </div>
+
+      <div id="errorBox" class="alert alert-danger d-none mt-3"></div>
+
+      <div class="analysis-steps">
+        <article class="analysis-step" id="stepSearch">
+          <span class="step-dot">▦</span>
+          <div>
+            <strong>언론사 및 기자 검색</strong>
+            <p>네이버 기자 옵션에서 해당 기자 탐색</p>
+          </div>
+        </article>
+        <article class="analysis-step" id="stepCollect">
+          <span class="step-dot">□</span>
+          <div>
+            <strong>기사 수집</strong>
+            <p>최신기사 20건과 최근 1개월 포스코그룹 관련 기사 수집</p>
+          </div>
+        </article>
+        <article class="analysis-step" id="stepAi">
+          <span class="step-dot">⌾</span>
+          <div>
+            <strong>AI 분석</strong>
+            <p>OpenAI로 기사 성향 및 토킹 포인트 분석</p>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const jobId = "{{ job_id }}";
+    const statusUrl = "{{ url_for('proj1.api_status', job_id=job_id) }}";
+
+    function setStepState(element, state) {
+      element.classList.remove('is-active', 'is-done', 'is-pending');
+      element.classList.add(state);
+      const dot = element.querySelector('.step-dot');
+      if (state === 'is-done') dot.textContent = '✓';
+      if (state === 'is-active' && element.id === 'stepSearch') dot.textContent = '▦';
+      if (state === 'is-active' && element.id === 'stepCollect') dot.textContent = '□';
+      if (state === 'is-active' && element.id === 'stepAi') dot.textContent = '⌾';
+    }
+
+    function updateSteps(percent) {
+      const search = document.querySelector('#stepSearch');
+      const collect = document.querySelector('#stepCollect');
+      const ai = document.querySelector('#stepAi');
+
+      if (percent < 15) {
+        setStepState(search, 'is-active');
+        setStepState(collect, 'is-pending');
+        setStepState(ai, 'is-pending');
+      } else if (percent < 68) {
+        setStepState(search, 'is-done');
+        setStepState(collect, 'is-active');
+        setStepState(ai, 'is-pending');
+      } else if (percent < 100) {
+        setStepState(search, 'is-done');
+        setStepState(collect, 'is-done');
+        setStepState(ai, 'is-active');
+      } else {
+        setStepState(search, 'is-done');
+        setStepState(collect, 'is-done');
+        setStepState(ai, 'is-done');
+      }
+    }
+
+    function refineMessage(message, percent) {
+      if (!message) return '';
+      if (percent < 12) {
+        return `'{{ job.media_name }}' 언론사 정보 확인 중...`;
+      }
+      const collectMatch = message.match(/기사 원문.*\((\d+)\/(\d+)\)/);
+      if (collectMatch) {
+        return `기사 원문 수집 중... (${collectMatch[1]}/${collectMatch[2]})`;
+      }
+      if (message.includes('스크롤')) {
+        const countMatch = message.match(/기사\s+(\d+)건/);
+        return countMatch ? `최신 기사 목록 확장 중... (${countMatch[1]}건)` : '최신 기사 목록 확장 중...';
+      }
+      if (message.includes('종합 분석')) return '최신 기사 기반 종합 분석 중...';
+      if (message.includes('토킹 포인트') || message.includes('토킹포인트')) return '포스코 관련 토킹 포인트 생성 중...';
+      return message;
+    }
+
+    async function poll() {
+      const res = await fetch(statusUrl);
+      const data = await res.json();
+      const percent = data.percent || 0;
+
+      document.querySelector('#message').textContent = refineMessage(data.message || '', percent);
+      document.querySelector('#percentText').textContent = `${percent}%`;
+      document.querySelector('#bar').style.width = `${percent}%`;
+      updateSteps(percent);
+
+      if (data.status === 'done') {
+        window.location.href = data.result_url;
+        return;
+      }
+      if (data.status === 'error') {
+        document.querySelector('#errorBox').classList.remove('d-none');
+        document.querySelector('#errorBox').textContent = data.error || data.message || '작업 중 오류가 발생했습니다.';
+        return;
+      }
+      setTimeout(poll, 2000);
+    }
+
+    updateSteps({{ job.percent }});
+    setTimeout(poll, 800);
+  </script>
+  <script src="{{ url_for('static', filename='js/theme-toggle.js') }}"></script>
+</body>
+</html>

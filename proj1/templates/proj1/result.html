@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>분석 결과</title>
+  <script>(function(){document.documentElement.dataset.theme=localStorage.getItem('pr-module-theme')==='white'?'white':'black';})();</script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{ url_for('proj1.static', filename='style.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/theme-toggle.css') }}" rel="stylesheet">
+</head>
+<body class="analysis-result-page">
+  {% set general = result.general_analysis %}
+  {% set talking = result.talking_analysis %}
+  {% set interest_numbers = ["①", "②", "③", "④", "⑤"] %}
+  {% set keywords = general.keywords or [] %}
+  {% set special_articles = [] %}
+  {% set special_terms = ["단독", "기획", "현장취재", "현장 취재", "르포", "기자수첩"] %}
+  {% for article in result.latest_articles %}
+    {% for term in special_terms %}
+      {% if term in article.title and article not in special_articles %}
+        {% set _ = special_articles.append(article) %}
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+  <main class="result-shell">
+    <header class="profile-hero">
+      <div class="profile-copy">
+        <h1>{{ result.reporter_name }} 기자</h1>
+        <div class="profile-meta">
+          <span class="media-pill">▦ {{ result.media_name }}</span>
+          <span>□ 분석 기사 {{ result.latest_articles|length }}건</span>
+          <span>▥ 포스코 기사 {{ result.posco_articles|length }}건</span>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="result-action theme-toggle" type="button" data-theme-toggle></button>
+        <a class="result-action" href="{{ url_for('proj1.index') }}">⌕ 새 검색</a>
+        <a class="result-action" href="{{ result.search_url }}" target="_blank" rel="noreferrer">네이버 결과</a>
+      </div>
+    </header>
+
+    <ul class="result-tabs nav" id="resultTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="result-tab active" data-bs-toggle="tab" data-bs-target="#general" type="button">▦ 종합 분석</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="result-tab" data-bs-toggle="tab" data-bs-target="#talking" type="button">💬 토킹 포인트</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="result-tab" data-bs-toggle="tab" data-bs-target="#latest" type="button">☷ 최신 기사 <span>{{ result.latest_articles|length }}</span></button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="result-tab" data-bs-toggle="tab" data-bs-target="#posco" type="button">▥ 포스코 기사 <span class="danger">{{ result.posco_articles|length }}</span></button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <section class="tab-pane fade show active" id="general">
+        <div class="result-grid two-col">
+          <article class="result-card">
+            <h2><span class="card-icon blue">◆</span> 관심 주제</h2>
+            <div class="interest-list">
+              {% for item in (general.interest_areas or [])[:5] %}
+                <section class="interest-item">
+                  <strong><span>{{ interest_numbers[loop.index0] }}</span> {{ item.name }}</strong>
+                  <p>{{ item.evidence }}</p>
+                </section>
+              {% else %}
+                <p class="muted-text">관심 주제 분석 결과가 없습니다.</p>
+              {% endfor %}
+            </div>
+          </article>
+
+          <article class="result-card">
+            <h2><span class="card-icon yellow">☵</span> 기사 분석</h2>
+            {% if general.tone %}
+              <p class="tone-summary">{{ general.tone.summary }}</p>
+              <ul class="tone-points">
+                {% for feature in general.tone.features or [] %}
+                  {% if not ('포스코' in feature or 'POSCO' in feature) %}
+                    <li>{{ feature }}</li>
+                  {% endif %}
+                {% endfor %}
+                {% for feature in general.tone.features or [] %}
+                  {% if '포스코' in feature or 'POSCO' in feature %}
+                    <li class="is-posco">{{ feature }}</li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+              {% if special_articles %}
+                <div class="exclusive-box">
+                  {% for article in special_articles[:4] %}
+                    <a href="{{ article.url }}" target="_blank" rel="noreferrer">{{ article.title }}</a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% else %}
+              <p class="tone-summary">{{ general.raw or '기사 분석 결과가 없습니다.' }}</p>
+            {% endif %}
+          </article>
+        </div>
+
+        <article class="result-card wide-card">
+          <h2><span class="card-icon green">◇</span> 관심 키워드</h2>
+          <div class="keyword-panel">
+            <div class="keyword-ranking">
+              {% for keyword in keywords[:5] %}
+                <div class="keyword-rank-item rank-{{ loop.index }}">
+                  <div class="keyword-rank-head">
+                    <span class="keyword-rank-number">{{ loop.index }}</span>
+                    <strong>{{ keyword.word }}</strong>
+                    <em>{{ '핵심' if loop.index <= 2 else '관심' }}</em>
+                  </div>
+                  <div class="keyword-rank-track">
+                    <span style="width: {{ 100 - ((loop.index - 1) * 12) }}%"></span>
+                  </div>
+                </div>
+              {% else %}
+              <p class="muted-text">키워드 분석 결과가 없습니다.</p>
+              {% endfor %}
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="tab-pane fade" id="latest">
+        <article class="result-card wide-card">
+          <h2><span class="card-icon blue">☷</span> 최신 기사</h2>
+          <div class="article-list">
+            {% for article in result.latest_articles %}
+              {% include "proj1/_article.html" %}
+            {% endfor %}
+          </div>
+        </article>
+      </section>
+
+      <section class="tab-pane fade" id="posco">
+        <article class="result-card wide-card">
+          <h2><span class="card-icon red">▥</span> 포스코 기사</h2>
+          <div class="article-list compact">
+            {% for article in result.posco_articles[:5] %}
+              {% include "proj1/_article.html" %}
+            {% else %}
+              <p class="muted-text">포스코 관련 기사를 찾지 못했습니다.</p>
+            {% endfor %}
+          </div>
+        </article>
+      </section>
+
+      <section class="tab-pane fade" id="talking">
+        <article class="talking-strategy-card">
+          <h2><span class="card-icon yellow">💡</span> 토킹 포인트 개요</h2>
+          <p>{{ (talking.meeting_strategy or talking.raw or '미팅 전략 분석 결과가 없습니다.')|clean_generated }}</p>
+        </article>
+
+        <h2 class="talking-section-title"><span>💬</span> 핵심 토킹 포인트</h2>
+        <div class="talking-list">
+          {% for point in talking.talking_points or [] %}
+            {% set scenario = point.scenario or point.script or point.content or point.message or point.body %}
+            <article class="talk-card">
+              <span>{{ loop.index }}</span>
+              <div>
+                <strong>{{ point.title|clean_card_title }}</strong>
+                <p>{{ scenario|clean_generated }}</p>
+                {% if point.reason %}
+                  <small class="talk-reason">ⓘ 활용 이유: {{ point.reason|clean_reason }}</small>
+                {% endif %}
+              </div>
+            </article>
+          {% else %}
+            <p class="muted-text">토킹 포인트 분석 결과가 없습니다.</p>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/theme-toggle.js') }}"></script>
+</body>
+</html>

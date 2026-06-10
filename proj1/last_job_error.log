@@ -1,0 +1,13 @@
+RuntimeError: 검색 결과에서 기사를 찾지 못했습니다. 언론사명과 기자명을 확인해 주세요.
+Traceback (most recent call last):
+  File "/Users/yooleene/Documents/LAB/PBL/pr/proj1/app.py", line 1334, in run_job
+    crawled = crawl_naver_news(media_name, reporter_name, progress)
+  File "/Users/yooleene/Documents/LAB/PBL/pr/proj1/app.py", line 882, in crawl_naver_news
+    return crawl_naver_news_requests(
+        media_name,
+    ...<4 lines>...
+        progress,
+    )
+  File "/Users/yooleene/Documents/LAB/PBL/pr/proj1/app.py", line 773, in crawl_naver_news_requests
+    raise RuntimeError("검색 결과에서 기사를 찾지 못했습니다. 언론사명과 기자명을 확인해 주세요.")
+RuntimeError: 검색 결과에서 기사를 찾지 못했습니다. 언론사명과 기자명을 확인해 주세요.

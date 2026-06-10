@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>미디어 인텔리전스</title>
+  <script>(function(){document.documentElement.dataset.theme=localStorage.getItem('pr-module-theme')==='white'?'white':'black';})();</script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{ url_for('proj1.static', filename='style.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/theme-toggle.css') }}" rel="stylesheet">
+</head>
+<body>
+  <button class="theme-toggle is-floating" type="button" data-theme-toggle></button>
+  <main class="app-shell">
+    <section class="hero-band">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-lg-7 col-xl-6">
+            <div class="search-heading">
+              <p class="eyebrow">POSCO PR Intelligence</p>
+              <h1>미디어 인텔리전스</h1>
+              <p class="lead">언론사와 기자명을 기준으로 최신 기사 흐름을 읽고 미팅용 토킹 포인트를 생성합니다.</p>
+            </div>
+            <form class="search-panel" method="post" action="{{ url_for('proj1.search') }}">
+              {% if error %}
+                <div class="alert alert-danger py-2">{{ error }}</div>
+              {% endif %}
+              <div class="mb-3">
+                <label class="form-label" for="media_name">언론사명</label>
+                <div class="autocomplete-wrap">
+                  <input class="form-control form-control-lg" id="media_name" name="media_name" placeholder="예: 매일경제" autocomplete="off" required>
+                  <button class="autocomplete-ghost" id="media_autocomplete" type="button" hidden></button>
+                </div>
+                <div class="form-text">현재 prompt.md 기준 {{ office_count }}개 언론사 코드를 지원합니다.</div>
+              </div>
+              <div class="mb-4">
+                <label class="form-label" for="reporter_name">기자명</label>
+                <input class="form-control form-control-lg" id="reporter_name" name="reporter_name" placeholder="예: 홍길동" required>
+              </div>
+              <button class="btn btn-primary btn-lg w-100" type="submit">분석 시작</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const mediaNames = {{ media_names|tojson }};
+    const mediaInput = document.querySelector('#media_name');
+    const mediaAutocomplete = document.querySelector('#media_autocomplete');
+
+    function normalizeMediaText(value) {
+      return (value || '').replace(/\s+/g, '').toLowerCase();
+    }
+
+    function findMediaSuggestion(value) {
+      const normalized = normalizeMediaText(value);
+      if (!normalized) return '';
+      return mediaNames.find((name) => normalizeMediaText(name).startsWith(normalized)) || '';
+    }
+
+    function updateMediaSuggestion() {
+      const suggestion = findMediaSuggestion(mediaInput.value);
+      if (!suggestion || suggestion === mediaInput.value.trim()) {
+        mediaAutocomplete.hidden = true;
+        mediaAutocomplete.textContent = '';
+        return;
+      }
+      mediaAutocomplete.textContent = suggestion;
+      mediaAutocomplete.hidden = false;
+    }
+
+    function acceptMediaSuggestion() {
+      if (mediaAutocomplete.hidden) return false;
+      mediaInput.value = mediaAutocomplete.textContent;
+      mediaAutocomplete.hidden = true;
+      mediaInput.focus();
+      return true;
+    }
+
+    mediaInput.addEventListener('input', updateMediaSuggestion);
+    mediaInput.addEventListener('blur', () => {
+      window.setTimeout(() => {
+        mediaAutocomplete.hidden = true;
+      }, 120);
+    });
+    mediaInput.addEventListener('keydown', (event) => {
+      if ((event.key === 'Tab' || event.key === 'Enter') && acceptMediaSuggestion()) {
+        event.preventDefault();
+      }
+    });
+    mediaAutocomplete.addEventListener('mousedown', (event) => {
+      event.preventDefault();
+      acceptMediaSuggestion();
+    });
+  </script>
+  <script src="{{ url_for('static', filename='js/theme-toggle.js') }}"></script>
+</body>
+</html>
